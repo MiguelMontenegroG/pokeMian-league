@@ -1,0 +1,1688 @@
+'use client'
+
+import { useState } from 'react'
+import type { Team, Pokemon } from '@/app/page'
+
+interface PokemonEntry {
+  id: number
+  name: string
+  types: string[] // Ahora es un array de tipos
+}
+
+// Lista completa de Pokémon con sus tipos (array)
+const pokemonList: PokemonEntry[] = [
+  // Generación 1 (1-151)
+  { id: 1, name: 'Bulbasaur', types: ['grass', 'poison'] },
+  { id: 2, name: 'Ivysaur', types: ['grass', 'poison'] },
+  { id: 3, name: 'Venusaur', types: ['grass', 'poison'] },
+  { id: 4, name: 'Charmander', types: ['fire'] },
+  { id: 5, name: 'Charmeleon', types: ['fire'] },
+  { id: 6, name: 'Charizard', types: ['fire', 'flying'] },
+  { id: 7, name: 'Squirtle', types: ['water'] },
+  { id: 8, name: 'Wartortle', types: ['water'] },
+  { id: 9, name: 'Blastoise', types: ['water'] },
+  { id: 10, name: 'Caterpie', types: ['bug'] },
+  { id: 11, name: 'Metapod', types: ['bug'] },
+  { id: 12, name: 'Butterfree', types: ['bug', 'flying'] },
+  { id: 13, name: 'Weedle', types: ['bug', 'poison'] },
+  { id: 14, name: 'Kakuna', types: ['bug', 'poison'] },
+  { id: 15, name: 'Beedrill', types: ['bug', 'poison'] },
+  { id: 16, name: 'Pidgey', types: ['normal', 'flying'] },
+  { id: 17, name: 'Pidgeotto', types: ['normal', 'flying'] },
+  { id: 18, name: 'Pidgeot', types: ['normal', 'flying'] },
+  { id: 19, name: 'Rattata', types: ['normal'] },
+  { id: 20, name: 'Raticate', types: ['normal'] },
+  { id: 21, name: 'Spearow', types: ['normal', 'flying'] },
+  { id: 22, name: 'Fearow', types: ['normal', 'flying'] },
+  { id: 23, name: 'Ekans', types: ['poison'] },
+  { id: 24, name: 'Arbok', types: ['poison'] },
+  { id: 25, name: 'Pikachu', types: ['electric'] },
+  { id: 26, name: 'Raichu', types: ['electric'] },
+  { id: 27, name: 'Sandshrew', types: ['ground'] },
+  { id: 28, name: 'Sandslash', types: ['ground'] },
+  { id: 29, name: 'Nidoran♀', types: ['poison'] },
+  { id: 30, name: 'Nidorina', types: ['poison'] },
+  { id: 31, name: 'Nidoqueen', types: ['poison', 'ground'] },
+  { id: 32, name: 'Nidoran♂', types: ['poison'] },
+  { id: 33, name: 'Nidorino', types: ['poison'] },
+  { id: 34, name: 'Nidoking', types: ['poison', 'ground'] },
+  { id: 35, name: 'Clefairy', types: ['fairy'] },
+  { id: 36, name: 'Clefable', types: ['fairy'] },
+  { id: 37, name: 'Vulpix', types: ['fire'] },
+  { id: 38, name: 'Ninetales', types: ['fire'] },
+  { id: 39, name: 'Jigglypuff', types: ['fairy'] },
+  { id: 40, name: 'Wigglytuff', types: ['fairy'] },
+  { id: 41, name: 'Zubat', types: ['poison', 'flying'] },
+  { id: 42, name: 'Golbat', types: ['poison', 'flying'] },
+  { id: 43, name: 'Oddish', types: ['grass', 'poison'] },
+  { id: 44, name: 'Gloom', types: ['grass', 'poison'] },
+  { id: 45, name: 'Vileplume', types: ['grass', 'poison'] },
+  { id: 46, name: 'Paras', types: ['bug', 'grass'] },
+  { id: 47, name: 'Parasect', types: ['bug', 'grass'] },
+  { id: 48, name: 'Venonat', types: ['bug', 'poison'] },
+  { id: 49, name: 'Venomoth', types: ['bug', 'poison'] },
+  { id: 50, name: 'Diglett', types: ['ground'] },
+  { id: 51, name: 'Dugtrio', types: ['ground'] },
+  { id: 52, name: 'Meowth', types: ['normal'] },
+  { id: 53, name: 'Persian', types: ['normal'] },
+  { id: 54, name: 'Psyduck', types: ['water'] },
+  { id: 55, name: 'Golduck', types: ['water'] },
+  { id: 56, name: 'Mankey', types: ['fighting'] },
+  { id: 57, name: 'Primeape', types: ['fighting'] },
+  { id: 58, name: 'Growlithe', types: ['fire'] },
+  { id: 59, name: 'Arcanine', types: ['fire'] },
+  { id: 60, name: 'Poliwag', types: ['water'] },
+  { id: 61, name: 'Poliwhirl', types: ['water'] },
+  { id: 62, name: 'Poliwrath', types: ['water', 'fighting'] },
+  { id: 63, name: 'Abra', types: ['psychic'] },
+  { id: 64, name: 'Kadabra', types: ['psychic'] },
+  { id: 65, name: 'Alakazam', types: ['psychic'] },
+  { id: 66, name: 'Machop', types: ['fighting'] },
+  { id: 67, name: 'Machoke', types: ['fighting'] },
+  { id: 68, name: 'Machamp', types: ['fighting'] },
+  { id: 69, name: 'Bellsprout', types: ['grass', 'poison'] },
+  { id: 70, name: 'Weepinbell', types: ['grass', 'poison'] },
+  { id: 71, name: 'Victreebel', types: ['grass', 'poison'] },
+  { id: 72, name: 'Tentacool', types: ['water', 'poison'] },
+  { id: 73, name: 'Tentacruel', types: ['water', 'poison'] },
+  { id: 74, name: 'Geodude', types: ['rock', 'ground'] },
+  { id: 75, name: 'Graveler', types: ['rock', 'ground'] },
+  { id: 76, name: 'Golem', types: ['rock', 'ground'] },
+  { id: 77, name: 'Ponyta', types: ['fire'] },
+  { id: 78, name: 'Rapidash', types: ['fire'] },
+  { id: 79, name: 'Slowpoke', types: ['water', 'psychic'] },
+  { id: 80, name: 'Slowbro', types: ['water', 'psychic'] },
+  { id: 81, name: 'Magnemite', types: ['electric', 'steel'] },
+  { id: 82, name: 'Magneton', types: ['electric', 'steel'] },
+  { id: 83, name: "Farfetch'd", types: ['normal', 'flying'] },
+  { id: 84, name: 'Doduo', types: ['normal', 'flying'] },
+  { id: 85, name: 'Dodrio', types: ['normal', 'flying'] },
+  { id: 86, name: 'Seel', types: ['water'] },
+  { id: 87, name: 'Dewgong', types: ['water', 'ice'] },
+  { id: 88, name: 'Grimer', types: ['poison'] },
+  { id: 89, name: 'Muk', types: ['poison'] },
+  { id: 90, name: 'Shellder', types: ['water'] },
+  { id: 91, name: 'Cloyster', types: ['water', 'ice'] },
+  { id: 92, name: 'Gastly', types: ['ghost', 'poison'] },
+  { id: 93, name: 'Haunter', types: ['ghost', 'poison'] },
+  { id: 94, name: 'Gengar', types: ['ghost', 'poison'] },
+  { id: 95, name: 'Onix', types: ['rock', 'ground'] },
+  { id: 96, name: 'Drowzee', types: ['psychic'] },
+  { id: 97, name: 'Hypno', types: ['psychic'] },
+  { id: 98, name: 'Krabby', types: ['water'] },
+  { id: 99, name: 'Kingler', types: ['water'] },
+  { id: 100, name: 'Voltorb', types: ['electric'] },
+  { id: 101, name: 'Electrode', types: ['electric'] },
+  { id: 102, name: 'Exeggcute', types: ['grass', 'psychic'] },
+  { id: 103, name: 'Exeggutor', types: ['grass', 'psychic'] },
+  { id: 104, name: 'Cubone', types: ['ground'] },
+  { id: 105, name: 'Marowak', types: ['ground'] },
+  { id: 106, name: 'Hitmonlee', types: ['fighting'] },
+  { id: 107, name: 'Hitmonchan', types: ['fighting'] },
+  { id: 108, name: 'Lickitung', types: ['normal'] },
+  { id: 109, name: 'Koffing', types: ['poison'] },
+  { id: 110, name: 'Weezing', types: ['poison'] },
+  { id: 111, name: 'Rhyhorn', types: ['ground', 'rock'] },
+  { id: 112, name: 'Rhydon', types: ['ground', 'rock'] },
+  { id: 113, name: 'Chansey', types: ['normal'] },
+  { id: 114, name: 'Tangela', types: ['grass'] },
+  { id: 115, name: 'Kangaskhan', types: ['normal'] },
+  { id: 116, name: 'Horsea', types: ['water'] },
+  { id: 117, name: 'Seadra', types: ['water'] },
+  { id: 118, name: 'Goldeen', types: ['water'] },
+  { id: 119, name: 'Seaking', types: ['water'] },
+  { id: 120, name: 'Staryu', types: ['water'] },
+  { id: 121, name: 'Starmie', types: ['water', 'psychic'] },
+  { id: 122, name: 'Mr. Mime', types: ['psychic', 'fairy'] },
+  { id: 123, name: 'Scyther', types: ['bug', 'flying'] },
+  { id: 124, name: 'Jynx', types: ['ice', 'psychic'] },
+  { id: 125, name: 'Electabuzz', types: ['electric'] },
+  { id: 126, name: 'Magmar', types: ['fire'] },
+  { id: 127, name: 'Pinsir', types: ['bug'] },
+  { id: 128, name: 'Tauros', types: ['normal'] },
+  { id: 129, name: 'Magikarp', types: ['water'] },
+  { id: 130, name: 'Gyarados', types: ['water', 'flying'] },
+  { id: 131, name: 'Lapras', types: ['water', 'ice'] },
+  { id: 132, name: 'Ditto', types: ['normal'] },
+  { id: 133, name: 'Eevee', types: ['normal'] },
+  { id: 134, name: 'Vaporeon', types: ['water'] },
+  { id: 135, name: 'Jolteon', types: ['electric'] },
+  { id: 136, name: 'Flareon', types: ['fire'] },
+  { id: 137, name: 'Porygon', types: ['normal'] },
+  { id: 138, name: 'Omanyte', types: ['rock', 'water'] },
+  { id: 139, name: 'Omastar', types: ['rock', 'water'] },
+  { id: 140, name: 'Kabuto', types: ['rock', 'water'] },
+  { id: 141, name: 'Kabutops', types: ['rock', 'water'] },
+  { id: 142, name: 'Aerodactyl', types: ['rock', 'flying'] },
+  { id: 143, name: 'Snorlax', types: ['normal'] },
+  { id: 144, name: 'Articuno', types: ['ice', 'flying'] },
+  { id: 145, name: 'Zapdos', types: ['electric', 'flying'] },
+  { id: 146, name: 'Moltres', types: ['fire', 'flying'] },
+  { id: 147, name: 'Dratini', types: ['dragon'] },
+  { id: 148, name: 'Dragonair', types: ['dragon'] },
+  { id: 149, name: 'Dragonite', types: ['dragon', 'flying'] },
+  { id: 150, name: 'Mewtwo', types: ['psychic'] },
+  { id: 151, name: 'Mew', types: ['psychic'] },
+
+  // Generación 2 (152-251)
+  { id: 152, name: 'Chikorita', types: ['grass'] },
+  { id: 153, name: 'Bayleef', types: ['grass'] },
+  { id: 154, name: 'Meganium', types: ['grass'] },
+  { id: 155, name: 'Cyndaquil', types: ['fire'] },
+  { id: 156, name: 'Quilava', types: ['fire'] },
+  { id: 157, name: 'Typhlosion', types: ['fire'] },
+  { id: 158, name: 'Totodile', types: ['water'] },
+  { id: 159, name: 'Croconaw', types: ['water'] },
+  { id: 160, name: 'Feraligatr', types: ['water'] },
+  { id: 161, name: 'Sentret', types: ['normal'] },
+  { id: 162, name: 'Furret', types: ['normal'] },
+  { id: 163, name: 'Hoothoot', types: ['flying'] },
+  { id: 164, name: 'Noctowl', types: ['flying'] },
+  { id: 165, name: 'Ledyba', types: ['bug'] },
+  { id: 166, name: 'Ledian', types: ['bug'] },
+  { id: 167, name: 'Spinarak', types: ['bug'] },
+  { id: 168, name: 'Ariados', types: ['bug'] },
+  { id: 169, name: 'Crobat', types: ['poison', 'flying'] },
+  { id: 170, name: 'Chinchou', types: ['water'] },
+  { id: 171, name: 'Lanturn', types: ['water'] },
+  { id: 172, name: 'Pichu', types: ['electric'] },
+  { id: 173, name: 'Cleffa', types: ['fairy'] },
+  { id: 174, name: 'Igglybuff', types: ['fairy'] },
+  { id: 175, name: 'Togepi', types: ['fairy'] },
+  { id: 176, name: 'Togetic', types: ['fairy', 'flying'] },
+  { id: 177, name: 'Natu', types: ['psychic'] },
+  { id: 178, name: 'Xatu', types: ['psychic', 'flying'] },
+  { id: 179, name: 'Mareep', types: ['electric'] },
+  { id: 180, name: 'Flaaffy', types: ['electric'] },
+  { id: 181, name: 'Ampharos', types: ['electric'] },
+  { id: 182, name: 'Bellossom', types: ['grass'] },
+  { id: 183, name: 'Marill', types: ['water'] },
+  { id: 184, name: 'Azumarill', types: ['water', 'fairy'] },
+  { id: 185, name: 'Sudowoodo', types: ['rock'] },
+  { id: 186, name: 'Politoed', types: ['water'] },
+  { id: 187, name: 'Hoppip', types: ['grass', 'flying'] },
+  { id: 188, name: 'Skiploom', types: ['grass', 'flying'] },
+  { id: 189, name: 'Jumpluff', types: ['grass', 'flying'] },
+  { id: 190, name: 'Aipom', types: ['normal'] },
+  { id: 191, name: 'Sunkern', types: ['grass'] },
+  { id: 192, name: 'Sunflora', types: ['grass'] },
+  { id: 193, name: 'Yanma', types: ['bug', 'flying'] },
+  { id: 194, name: 'Wooper', types: ['water', 'ground'] },
+  { id: 195, name: 'Quagsire', types: ['water', 'ground'] },
+  { id: 196, name: 'Espeon', types: ['psychic'] },
+  { id: 197, name: 'Umbreon', types: ['dark'] },
+  { id: 198, name: 'Murkrow', types: ['dark', 'flying'] },
+  { id: 199, name: 'Slowking', types: ['water', 'psychic'] },
+  { id: 200, name: 'Misdreavus', types: ['ghost'] },
+  { id: 201, name: 'Unown', types: ['psychic'] },
+  { id: 202, name: 'Wobbuffet', types: ['psychic'] },
+  { id: 203, name: 'Girafarig', types: ['normal', 'psychic'] },
+  { id: 204, name: 'Pineco', types: ['bug'] },
+  { id: 205, name: 'Forretress', types: ['bug', 'steel'] },
+  { id: 206, name: 'Dunsparce', types: ['normal'] },
+  { id: 207, name: 'Gligar', types: ['ground', 'flying'] },
+  { id: 208, name: 'Steelix', types: ['steel', 'ground'] },
+  { id: 209, name: 'Snubbull', types: ['fairy'] },
+  { id: 210, name: 'Granbull', types: ['fairy'] },
+  { id: 211, name: 'Qwilfish', types: ['water', 'poison'] },
+  { id: 212, name: 'Scizor', types: ['bug', 'steel'] },
+  { id: 213, name: 'Shuckle', types: ['bug', 'rock'] },
+  { id: 214, name: 'Heracross', types: ['bug', 'fighting'] },
+  { id: 215, name: 'Sneasel', types: ['dark', 'ice'] },
+  { id: 216, name: 'Teddiursa', types: ['normal'] },
+  { id: 217, name: 'Ursaring', types: ['normal'] },
+  { id: 218, name: 'Slugma', types: ['fire'] },
+  { id: 219, name: 'Magcargo', types: ['fire', 'rock'] },
+  { id: 220, name: 'Swinub', types: ['ice', 'ground'] },
+  { id: 221, name: 'Piloswine', types: ['ice', 'ground'] },
+  { id: 222, name: 'Corsola', types: ['water', 'rock'] },
+  { id: 223, name: 'Remoraid', types: ['water'] },
+  { id: 224, name: 'Octillery', types: ['water'] },
+  { id: 225, name: 'Delibird', types: ['ice', 'flying'] },
+  { id: 226, name: 'Mantine', types: ['water', 'flying'] },
+  { id: 227, name: 'Skarmory', types: ['steel', 'flying'] },
+  { id: 228, name: 'Houndour', types: ['dark', 'fire'] },
+  { id: 229, name: 'Houndoom', types: ['dark', 'fire'] },
+  { id: 230, name: 'Kingdra', types: ['water', 'dragon'] },
+  { id: 231, name: 'Phanpy', types: ['ground'] },
+  { id: 232, name: 'Donphan', types: ['ground'] },
+  { id: 233, name: 'Porygon2', types: ['normal'] },
+  { id: 234, name: 'Stantler', types: ['normal'] },
+  { id: 235, name: 'Smeargle', types: ['normal'] },
+  { id: 236, name: 'Tyrogue', types: ['fighting'] },
+  { id: 237, name: 'Hitmontop', types: ['fighting'] },
+  { id: 238, name: 'Smoochum', types: ['ice', 'psychic'] },
+  { id: 239, name: 'Elekid', types: ['electric'] },
+  { id: 240, name: 'Magby', types: ['fire'] },
+  { id: 241, name: 'Miltank', types: ['normal'] },
+  { id: 242, name: 'Blissey', types: ['normal'] },
+  { id: 243, name: 'Raikou', types: ['electric'] },
+  { id: 244, name: 'Entei', types: ['fire'] },
+  { id: 245, name: 'Suicune', types: ['water'] },
+  { id: 246, name: 'Larvitar', types: ['rock', 'ground'] },
+  { id: 247, name: 'Pupitar', types: ['rock', 'ground'] },
+  { id: 248, name: 'Tyranitar', types: ['rock', 'dark'] },
+  { id: 249, name: 'Lugia', types: ['psychic', 'flying'] },
+  { id: 250, name: 'Ho-Oh', types: ['fire', 'flying'] },
+  { id: 251, name: 'Celebi', types: ['psychic', 'grass'] },
+
+  // Generación 3 (252-386) - todos con types como array
+  { id: 252, name: 'Treecko', types: ['grass'] },
+  { id: 253, name: 'Grovyle', types: ['grass'] },
+  { id: 254, name: 'Sceptile', types: ['grass'] },
+  { id: 255, name: 'Torchic', types: ['fire'] },
+  { id: 256, name: 'Combusken', types: ['fire', 'fighting'] },
+  { id: 257, name: 'Blaziken', types: ['fire', 'fighting'] },
+  { id: 258, name: 'Mudkip', types: ['water'] },
+  { id: 259, name: 'Marshtomp', types: ['water', 'ground'] },
+  { id: 260, name: 'Swampert', types: ['water', 'ground'] },
+  { id: 261, name: 'Poochyena', types: ['dark'] },
+  { id: 262, name: 'Mightyena', types: ['dark'] },
+  { id: 263, name: 'Zigzagoon', types: ['normal'] },
+  { id: 264, name: 'Linoone', types: ['normal'] },
+  { id: 265, name: 'Wurmple', types: ['bug'] },
+  { id: 266, name: 'Silcoon', types: ['bug'] },
+  { id: 267, name: 'Beautifly', types: ['bug', 'flying'] },
+  { id: 268, name: 'Cascoon', types: ['bug'] },
+  { id: 269, name: 'Dustox', types: ['bug', 'poison'] },
+  { id: 270, name: 'Lotad', types: ['water', 'grass'] },
+  { id: 271, name: 'Lombre', types: ['water', 'grass'] },
+  { id: 272, name: 'Ludicolo', types: ['water', 'grass'] },
+  { id: 273, name: 'Seedot', types: ['grass'] },
+  { id: 274, name: 'Nuzleaf', types: ['grass', 'dark'] },
+  { id: 275, name: 'Shiftry', types: ['grass', 'dark'] },
+  { id: 276, name: 'Taillow', types: ['flying'] },
+  { id: 277, name: 'Swellow', types: ['flying'] },
+  { id: 278, name: 'Wingull', types: ['water', 'flying'] },
+  { id: 279, name: 'Pelipper', types: ['water', 'flying'] },
+  { id: 280, name: 'Ralts', types: ['psychic'] },
+  { id: 281, name: 'Kirlia', types: ['psychic'] },
+  { id: 282, name: 'Gardevoir', types: ['psychic'] },
+  { id: 283, name: 'Surskit', types: ['bug', 'water'] },
+  { id: 284, name: 'Masquerain', types: ['bug', 'flying'] },
+  { id: 285, name: 'Shroomish', types: ['grass'] },
+  { id: 286, name: 'Breloom', types: ['grass', 'fighting'] },
+  { id: 287, name: 'Slakoth', types: ['normal'] },
+  { id: 288, name: 'Vigoroth', types: ['normal'] },
+  { id: 289, name: 'Slaking', types: ['normal'] },
+  { id: 290, name: 'Nincada', types: ['bug', 'ground'] },
+  { id: 291, name: 'Ninjask', types: ['bug', 'flying'] },
+  { id: 292, name: 'Shedinja', types: ['bug', 'ghost'] },
+  { id: 293, name: 'Whismur', types: ['normal'] },
+  { id: 294, name: 'Loudred', types: ['normal'] },
+  { id: 295, name: 'Exploud', types: ['normal'] },
+  { id: 296, name: 'Makuhita', types: ['fighting'] },
+  { id: 297, name: 'Hariyama', types: ['fighting'] },
+  { id: 298, name: 'Azurill', types: ['normal', 'fairy'] },
+  { id: 299, name: 'Nosepass', types: ['rock'] },
+  { id: 300, name: 'Skitty', types: ['normal'] },
+  { id: 301, name: 'Delcatty', types: ['normal'] },
+  { id: 302, name: 'Sableye', types: ['dark', 'ghost'] },
+  { id: 303, name: 'Mawile', types: ['steel', 'fairy'] },
+  { id: 304, name: 'Aron', types: ['steel', 'rock'] },
+  { id: 305, name: 'Lairon', types: ['steel', 'rock'] },
+  { id: 306, name: 'Aggron', types: ['steel', 'rock'] },
+  { id: 307, name: 'Meditite', types: ['fighting', 'psychic'] },
+  { id: 308, name: 'Medicham', types: ['fighting', 'psychic'] },
+  { id: 309, name: 'Electrike', types: ['electric'] },
+  { id: 310, name: 'Manectric', types: ['electric'] },
+  { id: 311, name: 'Plusle', types: ['electric'] },
+  { id: 312, name: 'Minun', types: ['electric'] },
+  { id: 313, name: 'Volbeat', types: ['bug'] },
+  { id: 314, name: 'Illumise', types: ['bug'] },
+  { id: 315, name: 'Roselia', types: ['grass', 'poison'] },
+  { id: 316, name: 'Gulpin', types: ['poison'] },
+  { id: 317, name: 'Swalot', types: ['poison'] },
+  { id: 318, name: 'Carvanha', types: ['water', 'dark'] },
+  { id: 319, name: 'Sharpedo', types: ['water', 'dark'] },
+  { id: 320, name: 'Wailmer', types: ['water'] },
+  { id: 321, name: 'Wailord', types: ['water'] },
+  { id: 322, name: 'Numel', types: ['fire', 'ground'] },
+  { id: 323, name: 'Camerupt', types: ['fire', 'ground'] },
+  { id: 324, name: 'Torkoal', types: ['fire'] },
+  { id: 325, name: 'Spoink', types: ['psychic'] },
+  { id: 326, name: 'Grumpig', types: ['psychic'] },
+  { id: 327, name: 'Spinda', types: ['normal'] },
+  { id: 328, name: 'Trapinch', types: ['ground'] },
+  { id: 329, name: 'Vibrava', types: ['ground', 'dragon'] },
+  { id: 330, name: 'Flygon', types: ['ground', 'dragon'] },
+  { id: 331, name: 'Cacnea', types: ['grass'] },
+  { id: 332, name: 'Cacturne', types: ['grass', 'dark'] },
+  { id: 333, name: 'Swablu', types: ['flying'] },
+  { id: 334, name: 'Altaria', types: ['dragon', 'flying'] },
+  { id: 335, name: 'Zangoose', types: ['normal'] },
+  { id: 336, name: 'Seviper', types: ['poison'] },
+  { id: 337, name: 'Lunatone', types: ['rock', 'psychic'] },
+  { id: 338, name: 'Solrock', types: ['rock', 'psychic'] },
+  { id: 339, name: 'Barboach', types: ['water', 'ground'] },
+  { id: 340, name: 'Whiscash', types: ['water', 'ground'] },
+  { id: 341, name: 'Corphish', types: ['water'] },
+  { id: 342, name: 'Crawdaunt', types: ['water', 'dark'] },
+  { id: 343, name: 'Baltoy', types: ['ground', 'psychic'] },
+  { id: 344, name: 'Claydol', types: ['ground', 'psychic'] },
+  { id: 345, name: 'Lileep', types: ['rock', 'grass'] },
+  { id: 346, name: 'Cradily', types: ['rock', 'grass'] },
+  { id: 347, name: 'Anorith', types: ['rock', 'bug'] },
+  { id: 348, name: 'Armaldo', types: ['rock', 'bug'] },
+  { id: 349, name: 'Feebas', types: ['water'] },
+  { id: 350, name: 'Milotic', types: ['water'] },
+  { id: 351, name: 'Castform', types: ['normal'] },
+  { id: 352, name: 'Kecleon', types: ['normal'] },
+  { id: 353, name: 'Shuppet', types: ['ghost'] },
+  { id: 354, name: 'Banette', types: ['ghost'] },
+  { id: 355, name: 'Duskull', types: ['ghost'] },
+  { id: 356, name: 'Dusclops', types: ['ghost'] },
+  { id: 357, name: 'Tropius', types: ['grass', 'flying'] },
+  { id: 358, name: 'Chimecho', types: ['psychic'] },
+  { id: 359, name: 'Absol', types: ['dark'] },
+  { id: 360, name: 'Wynaut', types: ['psychic'] },
+  { id: 361, name: 'Snorunt', types: ['ice'] },
+  { id: 362, name: 'Glalie', types: ['ice'] },
+  { id: 363, name: 'Spheal', types: ['ice', 'water'] },
+  { id: 364, name: 'Sealeo', types: ['ice', 'water'] },
+  { id: 365, name: 'Walrein', types: ['ice', 'water'] },
+  { id: 366, name: 'Clamperl', types: ['water'] },
+  { id: 367, name: 'Huntail', types: ['water'] },
+  { id: 368, name: 'Gorebyss', types: ['water'] },
+  { id: 369, name: 'Relicanth', types: ['water', 'rock'] },
+  { id: 370, name: 'Luvdisc', types: ['water'] },
+  { id: 371, name: 'Bagon', types: ['dragon'] },
+  { id: 372, name: 'Shelgon', types: ['dragon'] },
+  { id: 373, name: 'Salamence', types: ['dragon', 'flying'] },
+  { id: 374, name: 'Beldum', types: ['steel', 'psychic'] },
+  { id: 375, name: 'Metang', types: ['steel', 'psychic'] },
+  { id: 376, name: 'Metagross', types: ['steel', 'psychic'] },
+  { id: 377, name: 'Regirock', types: ['rock'] },
+  { id: 378, name: 'Regice', types: ['ice'] },
+  { id: 379, name: 'Registeel', types: ['steel'] },
+  { id: 380, name: 'Latias', types: ['dragon', 'psychic'] },
+  { id: 381, name: 'Latios', types: ['dragon', 'psychic'] },
+  { id: 382, name: 'Kyogre', types: ['water'] },
+  { id: 383, name: 'Groudon', types: ['ground'] },
+  { id: 384, name: 'Rayquaza', types: ['dragon', 'flying'] },
+  { id: 385, name: 'Jirachi', types: ['steel', 'psychic'] },
+  { id: 386, name: 'Deoxys', types: ['psychic'] },
+
+  // Generación 4 (387-493)
+  { id: 387, name: 'Turtwig', types: ['grass'] },
+  { id: 388, name: 'Grotle', types: ['grass'] },
+  { id: 389, name: 'Torterra', types: ['grass', 'ground'] },
+  { id: 390, name: 'Chimchar', types: ['fire'] },
+  { id: 391, name: 'Monferno', types: ['fire', 'fighting'] },
+  { id: 392, name: 'Infernape', types: ['fire', 'fighting'] },
+  { id: 393, name: 'Piplup', types: ['water'] },
+  { id: 394, name: 'Prinplup', types: ['water'] },
+  { id: 395, name: 'Empoleon', types: ['water', 'steel'] },
+  { id: 396, name: 'Starly', types: ['flying'] },
+  { id: 397, name: 'Staravia', types: ['flying'] },
+  { id: 398, name: 'Staraptor', types: ['flying'] },
+  { id: 399, name: 'Bidoof', types: ['normal'] },
+  { id: 400, name: 'Bibarel', types: ['normal', 'water'] },
+  { id: 401, name: 'Kricketot', types: ['bug'] },
+  { id: 402, name: 'Kricketune', types: ['bug'] },
+  { id: 403, name: 'Shinx', types: ['electric'] },
+  { id: 404, name: 'Luxio', types: ['electric'] },
+  { id: 405, name: 'Luxray', types: ['electric'] },
+  { id: 406, name: 'Budew', types: ['grass', 'poison'] },
+  { id: 407, name: 'Roserade', types: ['grass', 'poison'] },
+  { id: 408, name: 'Cranidos', types: ['rock'] },
+  { id: 409, name: 'Rampardos', types: ['rock'] },
+  { id: 410, name: 'Shieldon', types: ['rock', 'steel'] },
+  { id: 411, name: 'Bastiodon', types: ['rock', 'steel'] },
+  { id: 412, name: 'Burmy', types: ['bug'] },
+  { id: 413, name: 'Wormadam', types: ['bug', 'grass'] }, // Plant cloak
+  { id: 414, name: 'Mothim', types: ['bug', 'flying'] },
+  { id: 415, name: 'Combee', types: ['bug', 'flying'] },
+  { id: 416, name: 'Vespiquen', types: ['bug', 'flying'] },
+  { id: 417, name: 'Pachirisu', types: ['electric'] },
+  { id: 418, name: 'Buizel', types: ['water'] },
+  { id: 419, name: 'Floatzel', types: ['water'] },
+  { id: 420, name: 'Cherubi', types: ['grass'] },
+  { id: 421, name: 'Cherrim', types: ['grass'] },
+  { id: 422, name: 'Shellos', types: ['water'] },
+  { id: 423, name: 'Gastrodon', types: ['water', 'ground'] },
+  { id: 424, name: 'Ambipom', types: ['normal'] },
+  { id: 425, name: 'Drifloon', types: ['ghost', 'flying'] },
+  { id: 426, name: 'Drifblim', types: ['ghost', 'flying'] },
+  { id: 427, name: 'Buneary', types: ['normal'] },
+  { id: 428, name: 'Lopunny', types: ['normal'] },
+  { id: 429, name: 'Mismagius', types: ['ghost'] },
+  { id: 430, name: 'Honchkrow', types: ['dark', 'flying'] },
+  { id: 431, name: 'Glameow', types: ['normal'] },
+  { id: 432, name: 'Purugly', types: ['normal'] },
+  { id: 433, name: 'Chingling', types: ['psychic'] },
+  { id: 434, name: 'Stunky', types: ['poison', 'dark'] },
+  { id: 435, name: 'Skuntank', types: ['poison', 'dark'] },
+  { id: 436, name: 'Bronzor', types: ['steel', 'psychic'] },
+  { id: 437, name: 'Bronzong', types: ['steel', 'psychic'] },
+  { id: 438, name: 'Bonsly', types: ['rock'] },
+  { id: 439, name: 'Mime Jr.', types: ['psychic', 'fairy'] },
+  { id: 440, name: 'Happiny', types: ['normal'] },
+  { id: 441, name: 'Chatot', types: ['flying'] },
+  { id: 442, name: 'Spiritomb', types: ['ghost', 'dark'] },
+  { id: 443, name: 'Gible', types: ['dragon', 'ground'] },
+  { id: 444, name: 'Gabite', types: ['dragon', 'ground'] },
+  { id: 445, name: 'Garchomp', types: ['dragon', 'ground'] },
+  { id: 446, name: 'Munchlax', types: ['normal'] },
+  { id: 447, name: 'Riolu', types: ['fighting'] },
+  { id: 448, name: 'Lucario', types: ['fighting', 'steel'] },
+  { id: 449, name: 'Hippopotas', types: ['ground'] },
+  { id: 450, name: 'Hippowdon', types: ['ground'] },
+  { id: 451, name: 'Skorupi', types: ['poison', 'bug'] },
+  { id: 452, name: 'Drapion', types: ['poison', 'dark'] },
+  { id: 453, name: 'Croagunk', types: ['poison', 'fighting'] },
+  { id: 454, name: 'Toxicroak', types: ['poison', 'fighting'] },
+  { id: 455, name: 'Carnivine', types: ['grass'] },
+  { id: 456, name: 'Finneon', types: ['water'] },
+  { id: 457, name: 'Lumineon', types: ['water'] },
+  { id: 458, name: 'Mantyke', types: ['water', 'flying'] },
+  { id: 459, name: 'Snover', types: ['grass', 'ice'] },
+  { id: 460, name: 'Abomasnow', types: ['grass', 'ice'] },
+  { id: 461, name: 'Weavile', types: ['dark', 'ice'] },
+  { id: 462, name: 'Magnezone', types: ['electric', 'steel'] },
+  { id: 463, name: 'Lickilicky', types: ['normal'] },
+  { id: 464, name: 'Rhyperior', types: ['ground', 'rock'] },
+  { id: 465, name: 'Tangrowth', types: ['grass'] },
+  { id: 466, name: 'Electivire', types: ['electric'] },
+  { id: 467, name: 'Magmortar', types: ['fire'] },
+  { id: 468, name: 'Togekiss', types: ['fairy', 'flying'] },
+  { id: 469, name: 'Yanmega', types: ['bug', 'flying'] },
+  { id: 470, name: 'Leafeon', types: ['grass'] },
+  { id: 471, name: 'Glaceon', types: ['ice'] },
+  { id: 472, name: 'Gliscor', types: ['ground', 'flying'] },
+  { id: 473, name: 'Mamoswine', types: ['ice', 'ground'] },
+  { id: 474, name: 'Porygon-Z', types: ['normal'] },
+  { id: 475, name: 'Gallade', types: ['psychic', 'fighting'] },
+  { id: 476, name: 'Probopass', types: ['rock', 'steel'] },
+  { id: 477, name: 'Dusknoir', types: ['ghost'] },
+  { id: 478, name: 'Froslass', types: ['ice', 'ghost'] },
+  { id: 479, name: 'Rotom', types: ['electric', 'ghost'] },
+  { id: 480, name: 'Uxie', types: ['psychic'] },
+  { id: 481, name: 'Mesprit', types: ['psychic'] },
+  { id: 482, name: 'Azelf', types: ['psychic'] },
+  { id: 483, name: 'Dialga', types: ['steel', 'dragon'] },
+  { id: 484, name: 'Palkia', types: ['water', 'dragon'] },
+  { id: 485, name: 'Heatran', types: ['fire', 'steel'] },
+  { id: 486, name: 'Regigigas', types: ['normal'] },
+  { id: 487, name: 'Giratina', types: ['ghost', 'dragon'] },
+  { id: 488, name: 'Cresselia', types: ['psychic'] },
+  { id: 489, name: 'Phione', types: ['water'] },
+  { id: 490, name: 'Manaphy', types: ['water'] },
+  { id: 491, name: 'Darkrai', types: ['dark'] },
+  { id: 492, name: 'Shaymin', types: ['grass'] },
+  { id: 493, name: 'Arceus', types: ['normal'] },
+
+  // Generación 5 (494-649)
+  { id: 494, name: 'Victini', types: ['psychic', 'fire'] },
+  { id: 495, name: 'Snivy', types: ['grass'] },
+  { id: 496, name: 'Servine', types: ['grass'] },
+  { id: 497, name: 'Serperior', types: ['grass'] },
+  { id: 498, name: 'Tepig', types: ['fire'] },
+  { id: 499, name: 'Pignite', types: ['fire', 'fighting'] },
+  { id: 500, name: 'Emboar', types: ['fire', 'fighting'] },
+  { id: 501, name: 'Oshawott', types: ['water'] },
+  { id: 502, name: 'Dewott', types: ['water'] },
+  { id: 503, name: 'Samurott', types: ['water'] },
+  { id: 504, name: 'Patrat', types: ['normal'] },
+  { id: 505, name: 'Watchog', types: ['normal'] },
+  { id: 506, name: 'Lillipup', types: ['normal'] },
+  { id: 507, name: 'Herdier', types: ['normal'] },
+  { id: 508, name: 'Stoutland', types: ['normal'] },
+  { id: 509, name: 'Purrloin', types: ['dark'] },
+  { id: 510, name: 'Liepard', types: ['dark'] },
+  { id: 511, name: 'Pansage', types: ['grass'] },
+  { id: 512, name: 'Simisage', types: ['grass'] },
+  { id: 513, name: 'Pansear', types: ['fire'] },
+  { id: 514, name: 'Simisear', types: ['fire'] },
+  { id: 515, name: 'Panpour', types: ['water'] },
+  { id: 516, name: 'Simipour', types: ['water'] },
+  { id: 517, name: 'Munna', types: ['psychic'] },
+  { id: 518, name: 'Musharna', types: ['psychic'] },
+  { id: 519, name: 'Pidove', types: ['flying'] },
+  { id: 520, name: 'Tranquill', types: ['flying'] },
+  { id: 521, name: 'Unfezant', types: ['flying'] },
+  { id: 522, name: 'Blitzle', types: ['electric'] },
+  { id: 523, name: 'Zebstrika', types: ['electric'] },
+  { id: 524, name: 'Roggenrola', types: ['rock'] },
+  { id: 525, name: 'Boldore', types: ['rock'] },
+  { id: 526, name: 'Gigalith', types: ['rock'] },
+  { id: 527, name: 'Woobat', types: ['psychic', 'flying'] },
+  { id: 528, name: 'Swoobat', types: ['psychic', 'flying'] },
+  { id: 529, name: 'Drilbur', types: ['ground'] },
+  { id: 530, name: 'Excadrill', types: ['ground', 'steel'] },
+  { id: 531, name: 'Audino', types: ['normal'] },
+  { id: 532, name: 'Timburr', types: ['fighting'] },
+  { id: 533, name: 'Gurdurr', types: ['fighting'] },
+  { id: 534, name: 'Conkeldurr', types: ['fighting'] },
+  { id: 535, name: 'Tympole', types: ['water'] },
+  { id: 536, name: 'Palpitoad', types: ['water', 'ground'] },
+  { id: 537, name: 'Seismitoad', types: ['water', 'ground'] },
+  { id: 538, name: 'Throh', types: ['fighting'] },
+  { id: 539, name: 'Sawk', types: ['fighting'] },
+  { id: 540, name: 'Sewaddle', types: ['bug', 'grass'] },
+  { id: 541, name: 'Swadloon', types: ['bug', 'grass'] },
+  { id: 542, name: 'Leavanny', types: ['bug', 'grass'] },
+  { id: 543, name: 'Venipede', types: ['bug', 'poison'] },
+  { id: 544, name: 'Whirlipede', types: ['bug', 'poison'] },
+  { id: 545, name: 'Scolipede', types: ['bug', 'poison'] },
+  { id: 546, name: 'Cottonee', types: ['grass', 'fairy'] },
+  { id: 547, name: 'Whimsicott', types: ['grass', 'fairy'] },
+  { id: 548, name: 'Petilil', types: ['grass'] },
+  { id: 549, name: 'Lilligant', types: ['grass'] },
+  { id: 550, name: 'Basculin', types: ['water'] },
+  { id: 551, name: 'Sandile', types: ['ground', 'dark'] },
+  { id: 552, name: 'Krokorok', types: ['ground', 'dark'] },
+  { id: 553, name: 'Krookodile', types: ['ground', 'dark'] },
+  { id: 554, name: 'Darumaka', types: ['fire'] },
+  { id: 555, name: 'Darmanitan', types: ['fire'] },
+  { id: 556, name: 'Maractus', types: ['grass'] },
+  { id: 557, name: 'Dwebble', types: ['bug', 'rock'] },
+  { id: 558, name: 'Crustle', types: ['bug', 'rock'] },
+  { id: 559, name: 'Scraggy', types: ['dark', 'fighting'] },
+  { id: 560, name: 'Scrafty', types: ['dark', 'fighting'] },
+  { id: 561, name: 'Sigilyph', types: ['psychic', 'flying'] },
+  { id: 562, name: 'Yamask', types: ['ghost'] },
+  { id: 563, name: 'Cofagrigus', types: ['ghost'] },
+  { id: 564, name: 'Tirtouga', types: ['water', 'rock'] },
+  { id: 565, name: 'Carracosta', types: ['water', 'rock'] },
+  { id: 566, name: 'Archen', types: ['rock', 'flying'] },
+  { id: 567, name: 'Archeops', types: ['rock', 'flying'] },
+  { id: 568, name: 'Trubbish', types: ['poison'] },
+  { id: 569, name: 'Garbodor', types: ['poison'] },
+  { id: 570, name: 'Zorua', types: ['dark'] },
+  { id: 571, name: 'Zoroark', types: ['dark'] },
+  { id: 572, name: 'Minccino', types: ['normal'] },
+  { id: 573, name: 'Cinccino', types: ['normal'] },
+  { id: 574, name: 'Gothita', types: ['psychic'] },
+  { id: 575, name: 'Gothorita', types: ['psychic'] },
+  { id: 576, name: 'Gothitelle', types: ['psychic'] },
+  { id: 577, name: 'Solosis', types: ['psychic'] },
+  { id: 578, name: 'Duosion', types: ['psychic'] },
+  { id: 579, name: 'Reuniclus', types: ['psychic'] },
+  { id: 580, name: 'Ducklett', types: ['water', 'flying'] },
+  { id: 581, name: 'Swanna', types: ['water', 'flying'] },
+  { id: 582, name: 'Vanillite', types: ['ice'] },
+  { id: 583, name: 'Vanillish', types: ['ice'] },
+  { id: 584, name: 'Vanilluxe', types: ['ice'] },
+  { id: 585, name: 'Deerling', types: ['normal', 'grass'] },
+  { id: 586, name: 'Sawsbuck', types: ['normal', 'grass'] },
+  { id: 587, name: 'Emolga', types: ['electric', 'flying'] },
+  { id: 588, name: 'Karrablast', types: ['bug'] },
+  { id: 589, name: 'Escavalier', types: ['bug', 'steel'] },
+  { id: 590, name: 'Foongus', types: ['grass', 'poison'] },
+  { id: 591, name: 'Amoonguss', types: ['grass', 'poison'] },
+  { id: 592, name: 'Frillish', types: ['water', 'ghost'] },
+  { id: 593, name: 'Jellicent', types: ['water', 'ghost'] },
+  { id: 594, name: 'Alomomola', types: ['water'] },
+  { id: 595, name: 'Joltik', types: ['bug', 'electric'] },
+  { id: 596, name: 'Galvantula', types: ['bug', 'electric'] },
+  { id: 597, name: 'Ferroseed', types: ['grass', 'steel'] },
+  { id: 598, name: 'Ferrothorn', types: ['grass', 'steel'] },
+  { id: 599, name: 'Klink', types: ['steel'] },
+  { id: 600, name: 'Klang', types: ['steel'] },
+  { id: 601, name: 'Klinklang', types: ['steel'] },
+  { id: 602, name: 'Tynamo', types: ['electric'] },
+  { id: 603, name: 'Eelektrik', types: ['electric'] },
+  { id: 604, name: 'Eelektross', types: ['electric'] },
+  { id: 605, name: 'Elgyem', types: ['psychic'] },
+  { id: 606, name: 'Beheeyem', types: ['psychic'] },
+  { id: 607, name: 'Litwick', types: ['ghost', 'fire'] },
+  { id: 608, name: 'Lampent', types: ['ghost', 'fire'] },
+  { id: 609, name: 'Chandelure', types: ['ghost', 'fire'] },
+  { id: 610, name: 'Axew', types: ['dragon'] },
+  { id: 611, name: 'Fraxure', types: ['dragon'] },
+  { id: 612, name: 'Haxorus', types: ['dragon'] },
+  { id: 613, name: 'Cubchoo', types: ['ice'] },
+  { id: 614, name: 'Beartic', types: ['ice'] },
+  { id: 615, name: 'Cryogonal', types: ['ice'] },
+  { id: 616, name: 'Shelmet', types: ['bug'] },
+  { id: 617, name: 'Accelgor', types: ['bug'] },
+  { id: 618, name: 'Stunfisk', types: ['ground', 'electric'] },
+  { id: 619, name: 'Mienfoo', types: ['fighting'] },
+  { id: 620, name: 'Mienshao', types: ['fighting'] },
+  { id: 621, name: 'Druddigon', types: ['dragon'] },
+  { id: 622, name: 'Golett', types: ['ground', 'ghost'] },
+  { id: 623, name: 'Golurk', types: ['ground', 'ghost'] },
+  { id: 624, name: 'Pawniard', types: ['dark', 'steel'] },
+  { id: 625, name: 'Bisharp', types: ['dark', 'steel'] },
+  { id: 626, name: 'Bouffalant', types: ['normal'] },
+  { id: 627, name: 'Rufflet', types: ['flying'] },
+  { id: 628, name: 'Braviary', types: ['flying'] },
+  { id: 629, name: 'Vullaby', types: ['dark', 'flying'] },
+  { id: 630, name: 'Mandibuzz', types: ['dark', 'flying'] },
+  { id: 631, name: 'Heatmor', types: ['fire'] },
+  { id: 632, name: 'Durant', types: ['bug', 'steel'] },
+  { id: 633, name: 'Deino', types: ['dark', 'dragon'] },
+  { id: 634, name: 'Zweilous', types: ['dark', 'dragon'] },
+  { id: 635, name: 'Hydreigon', types: ['dark', 'dragon'] },
+  { id: 636, name: 'Larvesta', types: ['bug', 'fire'] },
+  { id: 637, name: 'Volcarona', types: ['bug', 'fire'] },
+  { id: 638, name: 'Cobalion', types: ['steel', 'fighting'] },
+  { id: 639, name: 'Terrakion', types: ['rock', 'fighting'] },
+  { id: 640, name: 'Virizion', types: ['grass', 'fighting'] },
+  { id: 641, name: 'Tornadus', types: ['flying'] },
+  { id: 642, name: 'Thundurus', types: ['electric', 'flying'] },
+  { id: 643, name: 'Reshiram', types: ['dragon', 'fire'] },
+  { id: 644, name: 'Zekrom', types: ['dragon', 'electric'] },
+  { id: 645, name: 'Landorus', types: ['ground', 'flying'] },
+  { id: 646, name: 'Kyurem', types: ['dragon', 'ice'] },
+  { id: 647, name: 'Keldeo', types: ['water', 'fighting'] },
+  { id: 648, name: 'Meloetta', types: ['normal', 'psychic'] },
+  { id: 649, name: 'Genesect', types: ['bug', 'steel'] },
+
+  // Generación 6 (650-721)
+  { id: 650, name: 'Chespin', types: ['grass'] },
+  { id: 651, name: 'Quilladin', types: ['grass'] },
+  { id: 652, name: 'Chesnaught', types: ['grass', 'fighting'] },
+  { id: 653, name: 'Fennekin', types: ['fire'] },
+  { id: 654, name: 'Braixen', types: ['fire'] },
+  { id: 655, name: 'Delphox', types: ['fire', 'psychic'] },
+  { id: 656, name: 'Froakie', types: ['water'] },
+  { id: 657, name: 'Frogadier', types: ['water'] },
+  { id: 658, name: 'Greninja', types: ['water', 'dark'] },
+  { id: 659, name: 'Bunnelby', types: ['normal'] },
+  { id: 660, name: 'Diggersby', types: ['normal', 'ground'] },
+  { id: 661, name: 'Fletchling', types: ['flying'] },
+  { id: 662, name: 'Fletchinder', types: ['fire', 'flying'] },
+  { id: 663, name: 'Talonflame', types: ['fire', 'flying'] },
+  { id: 664, name: 'Scatterbug', types: ['bug'] },
+  { id: 665, name: 'Spewpa', types: ['bug'] },
+  { id: 666, name: 'Vivillon', types: ['bug', 'flying'] },
+  { id: 667, name: 'Litleo', types: ['fire', 'normal'] },
+  { id: 668, name: 'Pyroar', types: ['fire', 'normal'] },
+  { id: 669, name: 'Flabébé', types: ['fairy'] },
+  { id: 670, name: 'Floette', types: ['fairy'] },
+  { id: 671, name: 'Florges', types: ['fairy'] },
+  { id: 672, name: 'Skiddo', types: ['grass'] },
+  { id: 673, name: 'Gogoat', types: ['grass'] },
+  { id: 674, name: 'Pancham', types: ['fighting'] },
+  { id: 675, name: 'Pangoro', types: ['fighting', 'dark'] },
+  { id: 676, name: 'Furfrou', types: ['normal'] },
+  { id: 677, name: 'Espurr', types: ['psychic'] },
+  { id: 678, name: 'Meowstic', types: ['psychic'] },
+  { id: 679, name: 'Honedge', types: ['steel', 'ghost'] },
+  { id: 680, name: 'Doublade', types: ['steel', 'ghost'] },
+  { id: 681, name: 'Aegislash', types: ['steel', 'ghost'] },
+  { id: 682, name: 'Spritzee', types: ['fairy'] },
+  { id: 683, name: 'Aromatisse', types: ['fairy'] },
+  { id: 684, name: 'Swirlix', types: ['fairy'] },
+  { id: 685, name: 'Slurpuff', types: ['fairy'] },
+  { id: 686, name: 'Inkay', types: ['dark', 'psychic'] },
+  { id: 687, name: 'Malamar', types: ['dark', 'psychic'] },
+  { id: 688, name: 'Binacle', types: ['rock', 'water'] },
+  { id: 689, name: 'Barbaracle', types: ['rock', 'water'] },
+  { id: 690, name: 'Skrelp', types: ['poison', 'water'] },
+  { id: 691, name: 'Dragalge', types: ['poison', 'dragon'] },
+  { id: 692, name: 'Clauncher', types: ['water'] },
+  { id: 693, name: 'Clawitzer', types: ['water'] },
+  { id: 694, name: 'Helioptile', types: ['electric', 'normal'] },
+  { id: 695, name: 'Heliolisk', types: ['electric', 'normal'] },
+  { id: 696, name: 'Tyrunt', types: ['rock', 'dragon'] },
+  { id: 697, name: 'Tyrantrum', types: ['rock', 'dragon'] },
+  { id: 698, name: 'Amaura', types: ['rock', 'ice'] },
+  { id: 699, name: 'Aurorus', types: ['rock', 'ice'] },
+  { id: 700, name: 'Sylveon', types: ['fairy'] },
+  { id: 701, name: 'Hawlucha', types: ['fighting', 'flying'] },
+  { id: 702, name: 'Dedenne', types: ['electric', 'fairy'] },
+  { id: 703, name: 'Carbink', types: ['rock', 'fairy'] },
+  { id: 704, name: 'Goomy', types: ['dragon'] },
+  { id: 705, name: 'Sliggoo', types: ['dragon'] },
+  { id: 706, name: 'Goodra', types: ['dragon'] },
+  { id: 707, name: 'Klefki', types: ['steel', 'fairy'] },
+  { id: 708, name: 'Phantump', types: ['ghost', 'grass'] },
+  { id: 709, name: 'Trevenant', types: ['ghost', 'grass'] },
+  { id: 710, name: 'Pumpkaboo', types: ['ghost', 'grass'] },
+  { id: 711, name: 'Gourgeist', types: ['ghost', 'grass'] },
+  { id: 712, name: 'Bergmite', types: ['ice'] },
+  { id: 713, name: 'Avalugg', types: ['ice'] },
+  { id: 714, name: 'Noibat', types: ['flying', 'dragon'] },
+  { id: 715, name: 'Noivern', types: ['flying', 'dragon'] },
+  { id: 716, name: 'Xerneas', types: ['fairy'] },
+  { id: 717, name: 'Yveltal', types: ['dark', 'flying'] },
+  { id: 718, name: 'Zygarde', types: ['dragon', 'ground'] },
+  { id: 719, name: 'Diancie', types: ['rock', 'fairy'] },
+  { id: 720, name: 'Hoopa', types: ['psychic', 'ghost'] },
+  { id: 721, name: 'Volcanion', types: ['fire', 'water'] },
+
+  // Generación 7 (722-809)
+  { id: 722, name: 'Rowlet', types: ['grass', 'flying'] },
+  { id: 723, name: 'Dartrix', types: ['grass', 'flying'] },
+  { id: 724, name: 'Decidueye', types: ['grass', 'ghost'] },
+  { id: 725, name: 'Litten', types: ['fire'] },
+  { id: 726, name: 'Torracat', types: ['fire'] },
+  { id: 727, name: 'Incineroar', types: ['fire', 'dark'] },
+  { id: 728, name: 'Popplio', types: ['water'] },
+  { id: 729, name: 'Brionne', types: ['water'] },
+  { id: 730, name: 'Primarina', types: ['water', 'fairy'] },
+  { id: 731, name: 'Pikipek', types: ['flying'] },
+  { id: 732, name: 'Trumbeak', types: ['flying'] },
+  { id: 733, name: 'Toucannon', types: ['flying'] },
+  { id: 734, name: 'Yungoos', types: ['normal'] },
+  { id: 735, name: 'Gumshoos', types: ['normal'] },
+  { id: 736, name: 'Grubbin', types: ['bug'] },
+  { id: 737, name: 'Charjabug', types: ['bug', 'electric'] },
+  { id: 738, name: 'Vikavolt', types: ['bug', 'electric'] },
+  { id: 739, name: 'Crabrawler', types: ['fighting'] },
+  { id: 740, name: 'Crabominable', types: ['fighting', 'ice'] },
+  { id: 741, name: 'Oricorio', types: ['fire', 'flying'] },
+  { id: 742, name: 'Cutiefly', types: ['bug', 'fairy'] },
+  { id: 743, name: 'Ribombee', types: ['bug', 'fairy'] },
+  { id: 744, name: 'Rockruff', types: ['rock'] },
+  { id: 745, name: 'Lycanroc', types: ['rock'] },
+  { id: 746, name: 'Wishiwashi', types: ['water'] },
+  { id: 747, name: 'Mareanie', types: ['poison', 'water'] },
+  { id: 748, name: 'Toxapex', types: ['poison', 'water'] },
+  { id: 749, name: 'Mudbray', types: ['ground'] },
+  { id: 750, name: 'Mudsdale', types: ['ground'] },
+  { id: 751, name: 'Dewpider', types: ['water', 'bug'] },
+  { id: 752, name: 'Araquanid', types: ['water', 'bug'] },
+  { id: 753, name: 'Fomantis', types: ['grass'] },
+  { id: 754, name: 'Lurantis', types: ['grass'] },
+  { id: 755, name: 'Morelull', types: ['grass', 'fairy'] },
+  { id: 756, name: 'Shiinotic', types: ['grass', 'fairy'] },
+  { id: 757, name: 'Salandit', types: ['poison', 'fire'] },
+  { id: 758, name: 'Salazzle', types: ['poison', 'fire'] },
+  { id: 759, name: 'Stufful', types: ['normal', 'fighting'] },
+  { id: 760, name: 'Bewear', types: ['normal', 'fighting'] },
+  { id: 761, name: 'Bounsweet', types: ['grass'] },
+  { id: 762, name: 'Steenee', types: ['grass'] },
+  { id: 763, name: 'Tsareena', types: ['grass'] },
+  { id: 764, name: 'Comfey', types: ['fairy'] },
+  { id: 765, name: 'Oranguru', types: ['psychic'] },
+  { id: 766, name: 'Passimian', types: ['fighting'] },
+  { id: 767, name: 'Wimpod', types: ['bug', 'water'] },
+  { id: 768, name: 'Golisopod', types: ['bug', 'water'] },
+  { id: 769, name: 'Sandygast', types: ['ghost', 'ground'] },
+  { id: 770, name: 'Palossand', types: ['ghost', 'ground'] },
+  { id: 771, name: 'Pyukumuku', types: ['water'] },
+  { id: 772, name: 'Type: Null', types: ['normal'] },
+  { id: 773, name: 'Silvally', types: ['normal'] },
+  { id: 774, name: 'Minior', types: ['rock', 'flying'] },
+  { id: 775, name: 'Komala', types: ['normal'] },
+  { id: 776, name: 'Turtonator', types: ['fire', 'dragon'] },
+  { id: 777, name: 'Togedemaru', types: ['electric', 'steel'] },
+  { id: 778, name: 'Mimikyu', types: ['ghost', 'fairy'] },
+  { id: 779, name: 'Bruxish', types: ['water', 'psychic'] },
+  { id: 780, name: 'Drampa', types: ['dragon'] },
+  { id: 781, name: 'Dhelmise', types: ['ghost', 'grass'] },
+  { id: 782, name: 'Jangmo-o', types: ['dragon'] },
+  { id: 783, name: 'Hakamo-o', types: ['dragon', 'fighting'] },
+  { id: 784, name: 'Kommo-o', types: ['dragon', 'fighting'] },
+  { id: 785, name: 'Tapu Koko', types: ['electric', 'fairy'] },
+  { id: 786, name: 'Tapu Lele', types: ['psychic', 'fairy'] },
+  { id: 787, name: 'Tapu Bulu', types: ['grass', 'fairy'] },
+  { id: 788, name: 'Tapu Fini', types: ['water', 'fairy'] },
+  { id: 789, name: 'Cosmog', types: ['psychic'] },
+  { id: 790, name: 'Cosmoem', types: ['psychic'] },
+  { id: 791, name: 'Solgaleo', types: ['psychic', 'steel'] },
+  { id: 792, name: 'Lunala', types: ['psychic', 'ghost'] },
+  { id: 793, name: 'Nihilego', types: ['rock', 'poison'] },
+  { id: 794, name: 'Buzzwole', types: ['bug', 'fighting'] },
+  { id: 795, name: 'Pheromosa', types: ['bug', 'fighting'] },
+  { id: 796, name: 'Xurkitree', types: ['electric'] },
+  { id: 797, name: 'Celesteela', types: ['steel', 'flying'] },
+  { id: 798, name: 'Kartana', types: ['grass', 'steel'] },
+  { id: 799, name: 'Guzzlord', types: ['dark', 'dragon'] },
+  { id: 800, name: 'Necrozma', types: ['psychic'] },
+  { id: 801, name: 'Magearna', types: ['steel', 'fairy'] },
+  { id: 802, name: 'Marshadow', types: ['fighting', 'ghost'] },
+  { id: 803, name: 'Poipole', types: ['poison'] },
+  { id: 804, name: 'Naganadel', types: ['poison', 'dragon'] },
+  { id: 805, name: 'Stakataka', types: ['rock', 'steel'] },
+  { id: 806, name: 'Blacephalon', types: ['fire', 'ghost'] },
+  { id: 807, name: 'Zeraora', types: ['electric'] },
+  { id: 808, name: 'Meltan', types: ['steel'] },
+  { id: 809, name: 'Melmetal', types: ['steel'] },
+
+      // Generación 8 (810-905)
+  { id: 810, name: 'Grookey', types: ['grass'] },
+  { id: 811, name: 'Thwackey', types: ['grass'] },
+  { id: 812, name: 'Rillaboom', types: ['grass'] },
+  { id: 813, name: 'Scorbunny', types: ['fire'] },
+  { id: 814, name: 'Raboot', types: ['fire'] },
+  { id: 815, name: 'Cinderace', types: ['fire'] },
+  { id: 816, name: 'Sobble', types: ['water'] },
+  { id: 817, name: 'Drizzile', types: ['water'] },
+  { id: 818, name: 'Inteleon', types: ['water'] },
+  { id: 819, name: 'Skwovet', types: ['normal'] },
+  { id: 820, name: 'Greedent', types: ['normal'] },
+  { id: 821, name: 'Rookidee', types: ['flying'] },
+  { id: 822, name: 'Corvisquire', types: ['flying'] },
+  { id: 823, name: 'Corviknight', types: ['flying', 'steel'] },
+  { id: 824, name: 'Blipbug', types: ['bug'] },
+  { id: 825, name: 'Dottler', types: ['bug', 'psychic'] },
+  { id: 826, name: 'Orbeetle', types: ['bug', 'psychic'] },
+  { id: 827, name: 'Nickit', types: ['dark'] },
+  { id: 828, name: 'Thievul', types: ['dark'] },
+  { id: 829, name: 'Gossifleur', types: ['grass'] },
+  { id: 830, name: 'Eldegoss', types: ['grass'] },
+  { id: 831, name: 'Wooloo', types: ['normal'] },
+  { id: 832, name: 'Dubwool', types: ['normal'] },
+  { id: 833, name: 'Chewtle', types: ['water'] },
+  { id: 834, name: 'Drednaw', types: ['water', 'rock'] },
+  { id: 835, name: 'Yamper', types: ['electric'] },
+  { id: 836, name: 'Boltund', types: ['electric'] },
+  { id: 837, name: 'Rolycoly', types: ['rock'] },
+  { id: 838, name: 'Carkol', types: ['rock', 'fire'] },
+  { id: 839, name: 'Coalossal', types: ['rock', 'fire'] },
+  { id: 840, name: 'Applin', types: ['grass', 'dragon'] },
+  { id: 841, name: 'Flapple', types: ['grass', 'dragon'] },
+  { id: 842, name: 'Appletun', types: ['grass', 'dragon'] },
+  { id: 843, name: 'Silicobra', types: ['ground'] },
+  { id: 844, name: 'Sandaconda', types: ['ground'] },
+  { id: 845, name: 'Cramorant', types: ['flying', 'water'] },
+  { id: 846, name: 'Arrokuda', types: ['water'] },
+  { id: 847, name: 'Barraskewda', types: ['water'] },
+  { id: 848, name: 'Toxel', types: ['electric', 'poison'] },
+  { id: 849, name: 'Toxtricity', types: ['electric', 'poison'] },
+  { id: 850, name: 'Sizzlipede', types: ['fire', 'bug'] },
+  { id: 851, name: 'Centiskorch', types: ['fire', 'bug'] },
+  { id: 852, name: 'Clobbopus', types: ['fighting'] },
+  { id: 853, name: 'Grapploct', types: ['fighting'] },
+  { id: 854, name: 'Sinistea', types: ['ghost'] },
+  { id: 855, name: 'Polteageist', types: ['ghost'] },
+  { id: 856, name: 'Hatenna', types: ['psychic'] },
+  { id: 857, name: 'Hattrem', types: ['psychic'] },
+  { id: 858, name: 'Hatterene', types: ['psychic', 'fairy'] },
+  { id: 859, name: 'Impidimp', types: ['dark', 'fairy'] },
+  { id: 860, name: 'Morgrem', types: ['dark', 'fairy'] },
+  { id: 861, name: 'Grimmsnarl', types: ['dark', 'fairy'] },
+  { id: 862, name: 'Obstagoon', types: ['dark', 'normal'] },
+  { id: 863, name: 'Perrserker', types: ['steel'] },
+  { id: 864, name: 'Cursola', types: ['ghost'] },
+  { id: 865, name: 'Sirfetch’d', types: ['fighting'] },
+  { id: 866, name: 'Mr. Rime', types: ['ice', 'psychic'] },
+  { id: 867, name: 'Runerigus', types: ['ground', 'ghost'] },
+  { id: 868, name: 'Milcery', types: ['fairy'] },
+  { id: 869, name: 'Alcremie', types: ['fairy'] },
+  { id: 870, name: 'Falinks', types: ['fighting'] },
+  { id: 871, name: 'Pincurchin', types: ['electric'] },
+  { id: 872, name: 'Snom', types: ['ice', 'bug'] },
+  { id: 873, name: 'Frosmoth', types: ['ice', 'bug'] },
+  { id: 874, name: 'Stonjourner', types: ['rock'] },
+  { id: 875, name: 'Eiscue', types: ['ice'] },
+  { id: 876, name: 'Indeedee', types: ['psychic', 'normal'] },
+  { id: 877, name: 'Morpeko', types: ['electric', 'dark'] },
+  { id: 878, name: 'Cufant', types: ['steel'] },
+  { id: 879, name: 'Copperajah', types: ['steel'] },
+  { id: 880, name: 'Dracozolt', types: ['electric', 'dragon'] },
+  { id: 881, name: 'Arctozolt', types: ['electric', 'ice'] },
+  { id: 882, name: 'Dracovish', types: ['water', 'dragon'] },
+  { id: 883, name: 'Arctovish', types: ['water', 'ice'] },
+  { id: 884, name: 'Duraludon', types: ['steel', 'dragon'] },
+  { id: 885, name: 'Dragapult', types: ['dragon', 'ghost'] },
+  { id: 886, name: 'Zacian', types: ['fairy', 'steel'] },
+  { id: 887, name: 'Zamazenta', types: ['fighting', 'steel'] },
+  { id: 888, name: 'Eternatus', types: ['poison', 'dragon'] },
+  { id: 889, name: 'Kubfu', types: ['fighting'] },
+  { id: 890, name: 'Urshifu', types: ['fighting', 'dark'] }, // Single Strike; Rapid Strike is water, but we'll keep dark as it's the default
+  { id: 891, name: 'Zarude', types: ['dark', 'grass'] },
+  { id: 892, name: 'Regieleki', types: ['electric'] },
+  { id: 893, name: 'Regidrago', types: ['dragon'] },
+  { id: 894, name: 'Glastrier', types: ['ice'] },
+  { id: 895, name: 'Spectrier', types: ['ghost'] },
+  { id: 896, name: 'Calyrex', types: ['psychic', 'grass'] },
+  { id: 897, name: 'Wyrdeer', types: ['normal', 'psychic'] },
+  { id: 898, name: 'Kleavor', types: ['bug', 'rock'] },
+  { id: 899, name: 'Ursaluna', types: ['ground', 'normal'] },
+  { id: 900, name: 'Basculegion', types: ['water', 'ghost'] },
+  { id: 901, name: 'Sneasler', types: ['fighting', 'poison'] },
+  { id: 902, name: 'Overqwil', types: ['dark', 'poison'] },
+  { id: 903, name: 'Enamorus', types: ['fairy', 'flying'] },
+
+  // Generación 9 (906-1025)
+  { id: 906, name: 'Sprigatito', types: ['grass'] },
+  { id: 907, name: 'Floragato', types: ['grass'] },
+  { id: 908, name: 'Meowscarada', types: ['grass', 'dark'] },
+  { id: 909, name: 'Fuecoco', types: ['fire'] },
+  { id: 910, name: 'Crocalor', types: ['fire'] },
+  { id: 911, name: 'Skeledirge', types: ['fire', 'ghost'] },
+  { id: 912, name: 'Quaxly', types: ['water'] },
+  { id: 913, name: 'Quaxwell', types: ['water'] },
+  { id: 914, name: 'Quaquaval', types: ['water', 'fighting'] },
+  { id: 915, name: 'Lechonk', types: ['normal'] },
+  { id: 916, name: 'Oinkologne', types: ['normal'] },
+  { id: 917, name: 'Tarountula', types: ['bug'] },
+  { id: 918, name: 'Spidops', types: ['bug'] },
+  { id: 919, name: 'Nymble', types: ['bug'] },
+  { id: 920, name: 'Lokix', types: ['bug', 'dark'] },
+  { id: 921, name: 'Pawmi', types: ['electric'] },
+  { id: 922, name: 'Pawmo', types: ['electric', 'fighting'] },
+  { id: 923, name: 'Pawmot', types: ['electric', 'fighting'] },
+  { id: 924, name: 'Tandemaus', types: ['normal'] },
+  { id: 925, name: 'Maushold', types: ['normal'] },
+  { id: 926, name: 'Fidough', types: ['fairy'] },
+  { id: 927, name: 'Dachsbun', types: ['fairy'] },
+  { id: 928, name: 'Smoliv', types: ['grass', 'normal'] },
+  { id: 929, name: 'Dolliv', types: ['grass', 'normal'] },
+  { id: 930, name: 'Arboliva', types: ['grass', 'normal'] },
+  { id: 931, name: 'Squawkabilly', types: ['flying', 'normal'] },
+  { id: 932, name: 'Nacli', types: ['rock'] },
+  { id: 933, name: 'Naclstack', types: ['rock'] },
+  { id: 934, name: 'Garganacl', types: ['rock'] },
+  { id: 935, name: 'Charcadet', types: ['fire'] },
+  { id: 936, name: 'Armarouge', types: ['fire', 'psychic'] },
+  { id: 937, name: 'Ceruledge', types: ['fire', 'ghost'] },
+  { id: 938, name: 'Tadbulb', types: ['electric'] },
+  { id: 939, name: 'Bellibolt', types: ['electric'] },
+  { id: 940, name: 'Wattrel', types: ['electric', 'flying'] },
+  { id: 941, name: 'Kilowattrel', types: ['electric', 'flying'] },
+  { id: 942, name: 'Maschiff', types: ['dark'] },
+  { id: 943, name: 'Mabosstiff', types: ['dark'] },
+  { id: 944, name: 'Shroodle', types: ['poison', 'normal'] },
+  { id: 945, name: 'Grafaiai', types: ['poison', 'normal'] },
+  { id: 946, name: 'Bramblin', types: ['grass', 'ghost'] },
+  { id: 947, name: 'Brambleghast', types: ['grass', 'ghost'] },
+  { id: 948, name: 'Toedscool', types: ['ground', 'grass'] },
+  { id: 949, name: 'Toedscruel', types: ['ground', 'grass'] },
+  { id: 950, name: 'Klawf', types: ['rock'] },
+  { id: 951, name: 'Capsakid', types: ['grass'] },
+  { id: 952, name: 'Scovillain', types: ['grass', 'fire'] },
+  { id: 953, name: 'Rellor', types: ['bug'] },
+  { id: 954, name: 'Rabsca', types: ['bug', 'psychic'] },
+  { id: 955, name: 'Flittle', types: ['psychic'] },
+  { id: 956, name: 'Espathra', types: ['psychic'] },
+  { id: 957, name: 'Tinkatink', types: ['fairy', 'steel'] },
+  { id: 958, name: 'Tinkatuff', types: ['fairy', 'steel'] },
+  { id: 959, name: 'Tinkaton', types: ['fairy', 'steel'] },
+  { id: 960, name: 'Wiglett', types: ['water'] },
+  { id: 961, name: 'Wugtrio', types: ['water'] },
+  { id: 962, name: 'Bombirdier', types: ['flying', 'dark'] },
+  { id: 963, name: 'Finizen', types: ['water'] },
+  { id: 964, name: 'Palafin', types: ['water'] },
+  { id: 965, name: 'Varoom', types: ['steel', 'poison'] },
+  { id: 966, name: 'Revavroom', types: ['steel', 'poison'] },
+  { id: 967, name: 'Cyclizar', types: ['dragon', 'normal'] },
+  { id: 968, name: 'Orthworm', types: ['steel'] },
+  { id: 969, name: 'Glimmet', types: ['rock', 'poison'] },
+  { id: 970, name: 'Glimmora', types: ['rock', 'poison'] },
+  { id: 971, name: 'Greavard', types: ['ghost'] },
+  { id: 972, name: 'Houndstone', types: ['ghost'] },
+  { id: 973, name: 'Flamigo', types: ['flying', 'fighting'] },
+  { id: 974, name: 'Cetoddle', types: ['ice'] },
+  { id: 975, name: 'Cetitan', types: ['ice'] },
+  { id: 976, name: 'Veluza', types: ['water', 'psychic'] },
+  { id: 977, name: 'Dondozo', types: ['water'] },
+  { id: 978, name: 'Tatsugiri', types: ['dragon', 'water'] },
+  { id: 979, name: 'Annihilape', types: ['fighting', 'ghost'] },
+  { id: 980, name: 'Clodsire', types: ['poison', 'ground'] },
+  { id: 981, name: 'Farigiraf', types: ['normal', 'psychic'] },
+  { id: 982, name: 'Dudunsparce', types: ['normal'] },
+  { id: 983, name: 'Kingambit', types: ['dark', 'steel'] },
+  { id: 984, name: 'Great Tusk', types: ['ground', 'fighting'] },
+  { id: 985, name: 'Scream Tail', types: ['fairy', 'psychic'] },
+  { id: 986, name: 'Brute Bonnet', types: ['grass', 'dark'] },
+  { id: 987, name: 'Flutter Mane', types: ['ghost', 'fairy'] },
+  { id: 988, name: 'Slither Wing', types: ['bug', 'fighting'] },
+  { id: 989, name: 'Sandy Shocks', types: ['electric', 'ground'] },
+  { id: 990, name: 'Iron Treads', types: ['ground', 'steel'] },
+  { id: 991, name: 'Iron Bundle', types: ['ice', 'water'] },
+  { id: 992, name: 'Iron Hands', types: ['fighting', 'electric'] },
+  { id: 993, name: 'Iron Jugulis', types: ['dark', 'flying'] },
+  { id: 994, name: 'Iron Moth', types: ['fire', 'poison'] },
+  { id: 995, name: 'Iron Thorns', types: ['rock', 'electric'] },
+  { id: 996, name: 'Frigibax', types: ['dragon', 'ice'] },
+  { id: 997, name: 'Arctibax', types: ['dragon', 'ice'] },
+  { id: 998, name: 'Baxcalibur', types: ['dragon', 'ice'] },
+  { id: 999, name: 'Gimmighoul', types: ['ghost'] },
+  { id: 1000, name: 'Gholdengo', types: ['steel', 'ghost'] },
+  { id: 1001, name: 'Wo-Chien', types: ['dark', 'grass'] },
+  { id: 1002, name: 'Chien-Pao', types: ['dark', 'ice'] },
+  { id: 1003, name: 'Ting-Lu', types: ['dark', 'ground'] },
+  { id: 1004, name: 'Chi-Yu', types: ['dark', 'fire'] },
+  { id: 1005, name: 'Roaring Moon', types: ['dragon', 'dark'] },
+  { id: 1006, name: 'Iron Valiant', types: ['fairy', 'fighting'] },
+  { id: 1007, name: 'Koraidon', types: ['fighting', 'dragon'] },
+  { id: 1008, name: 'Miraidon', types: ['electric', 'dragon'] },
+  { id: 1009, name: 'Walking Wake', types: ['water', 'dragon'] },
+  { id: 1010, name: 'Iron Leaves', types: ['grass', 'psychic'] },
+  { id: 1011, name: 'Dipplin', types: ['grass', 'dragon'] },
+  { id: 1012, name: 'Poltchageist', types: ['grass', 'ghost'] },
+  { id: 1013, name: 'Sinistcha', types: ['grass', 'ghost'] },
+  { id: 1014, name: 'Okidogi', types: ['poison', 'fighting'] },
+  { id: 1015, name: 'Munkidori', types: ['poison', 'psychic'] },
+  { id: 1016, name: 'Fezandipiti', types: ['poison', 'fairy'] },
+  { id: 1017, name: 'Ogerpon', types: ['grass'] }, // Base form, later forms have additional types but we use base
+  { id: 1018, name: 'Archaludon', types: ['steel', 'dragon'] },
+  { id: 1019, name: 'Hydrapple', types: ['grass', 'dragon'] },
+  { id: 1020, name: 'Gouging Fire', types: ['fire', 'dragon'] },
+  { id: 1021, name: 'Raging Bolt', types: ['electric', 'dragon'] },
+  { id: 1022, name: 'Iron Boulder', types: ['rock', 'psychic'] },
+  { id: 1023, name: 'Iron Crown', types: ['steel', 'psychic'] },
+  { id: 1024, name: 'Terapagos', types: ['normal'] }, // Stellar form is normal/??, but base is normal
+  { id: 1025, name: 'Pecharunt', types: ['poison', 'ghost'] },
+
+// Formas de Alola (IDs reales de PokeAPI)
+  { id: 10100, name: 'Rattata (Alola)', types: ['dark', 'normal'] },
+  { id: 10101, name: 'Raticate (Alola)', types: ['dark', 'normal'] },
+  { id: 10102, name: 'Raichu (Alola)', types: ['electric', 'psychic'] },
+  { id: 10103, name: 'Sandshrew (Alola)', types: ['ice', 'steel'] },
+  { id: 10104, name: 'Sandslash (Alola)', types: ['ice', 'steel'] },
+  { id: 10105, name: 'Vulpix (Alola)', types: ['ice'] },
+  { id: 10106, name: 'Ninetales (Alola)', types: ['ice', 'fairy'] },
+  { id: 10107, name: 'Diglett (Alola)', types: ['ground', 'steel'] },
+  { id: 10108, name: 'Dugtrio (Alola)', types: ['ground', 'steel'] },
+  { id: 10109, name: 'Meowth (Alola)', types: ['dark'] },
+  { id: 10110, name: 'Persian (Alola)', types: ['dark'] },
+  { id: 10111, name: 'Geodude (Alola)', types: ['rock', 'electric'] },
+  { id: 10112, name: 'Graveler (Alola)', types: ['rock', 'electric'] },
+  { id: 10113, name: 'Golem (Alola)', types: ['rock', 'electric'] },
+  { id: 10114, name: 'Grimer (Alola)', types: ['poison', 'dark'] },
+  { id: 10115, name: 'Muk (Alola)', types: ['poison', 'dark'] },
+  { id: 10116, name: 'Exeggutor (Alola)', types: ['grass', 'dragon'] },
+  { id: 10117, name: 'Marowak (Alola)', types: ['fire', 'ghost'] },
+
+  // Formas de Galar
+  { id: 10158, name: 'Meowth (Galar)', types: ['steel'] },
+  { id: 10159, name: 'Ponyta (Galar)', types: ['psychic'] },
+  { id: 10160, name: 'Rapidash (Galar)', types: ['psychic', 'fairy'] },
+  { id: 10161, name: "Farfetch'd (Galar)", types: ['fighting'] },
+  { id: 10162, name: 'Weezing (Galar)', types: ['poison', 'fairy'] },
+  { id: 10163, name: 'Mr. Mime (Galar)', types: ['ice', 'psychic'] },
+  { id: 10164, name: 'Corsola (Galar)', types: ['ghost'] },
+  { id: 10165, name: 'Zigzagoon (Galar)', types: ['dark', 'normal'] },
+  { id: 10166, name: 'Linoone (Galar)', types: ['dark', 'normal'] },
+  { id: 10167, name: 'Darumaka (Galar)', types: ['ice'] },
+  { id: 10168, name: 'Darmanitan (Galar)', types: ['ice'] },
+  { id: 10169, name: 'Yamask (Galar)', types: ['ground', 'ghost'] },
+  { id: 10170, name: 'Stunfisk (Galar)', types: ['ground', 'steel'] },
+
+  // Formas de Hisui
+  { id: 10229, name: 'Growlithe (Hisui)', types: ['fire', 'rock'] },
+  { id: 10230, name: 'Arcanine (Hisui)', types: ['fire', 'rock'] },
+  { id: 10231, name: 'Voltorb (Hisui)', types: ['electric', 'grass'] },
+  { id: 10232, name: 'Electrode (Hisui)', types: ['electric', 'grass'] },
+  { id: 10233, name: 'Typhlosion (Hisui)', types: ['fire', 'ghost'] },
+  { id: 10234, name: 'Qwilfish (Hisui)', types: ['dark', 'poison'] },
+  { id: 10235, name: 'Sneasel (Hisui)', types: ['fighting', 'poison'] },
+  { id: 10236, name: 'Samurott (Hisui)', types: ['water', 'dark'] },
+  { id: 10237, name: 'Lilligant (Hisui)', types: ['grass', 'fighting'] },
+  { id: 10238, name: 'Zorua (Hisui)', types: ['normal', 'ghost'] },
+  { id: 10239, name: 'Zoroark (Hisui)', types: ['normal', 'ghost'] },
+  { id: 10240, name: 'Braviary (Hisui)', types: ['psychic', 'flying'] },
+  { id: 10241, name: 'Sliggoo (Hisui)', types: ['steel', 'dragon'] },
+  { id: 10242, name: 'Goodra (Hisui)', types: ['steel', 'dragon'] },
+  { id: 10243, name: 'Avalugg (Hisui)', types: ['ice', 'rock'] },
+  { id: 10244, name: 'Decidueye (Hisui)', types: ['grass', 'fighting'] },
+];
+
+const getPokemonImage = (id: number): string => {
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+};
+
+// Obtener todos los tipos únicos de todos los Pokémon (aplanando arrays)
+const ALL_TYPES = Array.from(new Set(pokemonList.flatMap(p => p.types))).sort()
+
+interface FormData {
+  teamName: string
+  trainerName: string
+  wins: number
+  gamesPlayed: number
+  pokemons: Pokemon[]
+}
+
+interface Props {
+  onSave: (team: Omit<Team, 'id'>) => void
+  onUpdate: (team: Team) => void
+  onDelete: (id: number) => void
+  existingTeams: Team[]
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#4fc3f7', letterSpacing: '0.15em' }}>
+      {children}
+    </label>
+  )
+}
+
+function NumberStepper({
+  value,
+  onChange,
+  min = 0,
+}: {
+  value: number
+  onChange: (v: number) => void
+  min?: number
+}) {
+  return (
+    <div
+      className="flex items-center rounded-xl overflow-hidden"
+      style={{ border: '1px solid rgba(79,195,247,0.15)', background: 'rgba(26,32,53,0.8)' }}
+    >
+      <button
+        type="button"
+        className="w-10 h-10 flex items-center justify-center transition-colors font-bold text-lg"
+        style={{ color: '#4fc3f7' }}
+        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(79,195,247,0.08)')}
+        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+        onClick={() => onChange(Math.max(min, value - 1))}
+        aria-label="Reducir"
+      >
+        -
+      </button>
+      <input
+        type="number"
+        value={value}
+        min={min}
+        onChange={e => onChange(Math.max(min, parseInt(e.target.value) || 0))}
+        className="w-16 text-center bg-transparent focus:outline-none text-base font-bold"
+        style={{ color: '#e8eaf6' }}
+      />
+      <button
+        type="button"
+        className="w-10 h-10 flex items-center justify-center transition-colors font-bold text-lg"
+        style={{ color: '#4fc3f7' }}
+        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(79,195,247,0.08)')}
+        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+        onClick={() => onChange(value + 1)}
+        aria-label="Aumentar"
+      >
+        +
+      </button>
+    </div>
+  )
+}
+
+export default function TeamForm({ onSave, onUpdate, onDelete, existingTeams }: Props) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [notification, setNotification] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
+
+  const [formData, setFormData] = useState<FormData>({
+    teamName: '',
+    trainerName: '',
+    wins: 0,
+    gamesPlayed: 0,
+    pokemons: [],
+  })
+
+  const showNotification = (msg: string, type: 'success' | 'error' = 'success') => {
+    setNotification({ msg, type })
+    setTimeout(() => setNotification(null), 3000)
+  }
+
+  const resetForm = () => {
+    setFormData({ teamName: '', trainerName: '', wins: 0, gamesPlayed: 0, pokemons: [] })
+    setIsEditing(false)
+    setEditingId(null)
+    setTypeFilter('all')
+    setSearchQuery('')
+  }
+
+  const handleEdit = (team: Team) => {
+    setFormData({
+      teamName: team.teamName,
+      trainerName: team.trainerName,
+      wins: team.wins,
+      gamesPlayed: team.gamesPlayed || 0,
+      pokemons: [...team.pokemons],
+    })
+    setIsEditing(true)
+    setEditingId(team.id)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleDelete = (id: number) => {
+    if (window.confirm('¿Eliminar este equipo de la liga?')) {
+      onDelete(id)
+      resetForm()
+      showNotification('Equipo eliminado correctamente')
+    }
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (isEditing && editingId !== null) {
+      onUpdate({ ...formData, id: editingId })
+      showNotification('Equipo actualizado correctamente')
+    } else {
+      onSave(formData)
+      showNotification('Equipo creado correctamente')
+    }
+    resetForm()
+  }
+
+ const addPokemon = (pokemon: PokemonEntry) => {
+  if (formData.pokemons.length >= 10) return;
+  if (formData.pokemons.some(p => p.name === pokemon.name)) {
+    showNotification(`${pokemon.name} ya está en el equipo`, 'error');
+    return;
+  }
+  setFormData(prev => ({
+    ...prev,
+    pokemons: [
+      ...prev.pokemons,
+      {
+        name: pokemon.name,
+        types: pokemon.types,
+        image: getPokemonImage(pokemon.id), // solo pasa el id
+      },
+    ],
+  }));
+};
+
+  const removePokemon = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      pokemons: prev.pokemons.filter((_, i) => i !== index),
+    }))
+  }
+
+  const filteredPokemon = pokemonList.filter(p => {
+    const matchesType = typeFilter === 'all' || p.types.includes(typeFilter)
+    const matchesSearch = 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.id.toString() === searchQuery
+    return matchesType && matchesSearch
+  })
+
+  const slots = Array.from({ length: 10 })
+
+  return (
+    <div className="animate-fade-up">
+      {/* Notification toast */}
+      {notification && (
+        <div
+          className="fixed top-24 right-6 z-50 px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl animate-fade-scale"
+          style={{
+            background: notification.type === 'success'
+              ? 'rgba(16,185,129,0.15)'
+              : 'rgba(239,68,68,0.15)',
+            border: `1px solid ${notification.type === 'success' ? 'rgba(16,185,129,0.4)' : 'rgba(239,68,68,0.4)'}`,
+            color: notification.type === 'success' ? '#10b981' : '#ef4444',
+            backdropFilter: 'blur(12px)',
+          }}
+        >
+          {notification.msg}
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="mb-8">
+        <p className="text-xs tracking-widest uppercase mb-1 font-semibold" style={{ color: '#4fc3f7', letterSpacing: '0.2em' }}>
+          {isEditing ? 'Modificar registro' : 'Nuevo registro'}
+        </p>
+        <h2 className="text-3xl md:text-4xl font-bold tracking-wide" style={{ color: '#e8eaf6' }}>
+          {isEditing ? 'Editar ' : 'Crear '}<span className="glow-text" style={{ color: '#4fc3f7' }}>Equipo</span>
+        </h2>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Form column */}
+        <div className="xl:col-span-2 flex flex-col gap-6">
+          {/* Basic info card */}
+          <div className="glass-card p-6">
+            <h3 className="text-lg font-bold mb-5 flex items-center gap-2" style={{ color: '#e8eaf6' }}>
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#4fc3f7" strokeWidth="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+              </svg>
+              Información del Equipo
+            </h3>
+            <form id="team-form" onSubmit={handleSubmit}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+                <div>
+                  <FieldLabel>Nombre del equipo</FieldLabel>
+                  <input
+                    type="text"
+                    value={formData.teamName}
+                    onChange={e => setFormData(prev => ({ ...prev, teamName: e.target.value }))}
+                    required
+                    placeholder="Ej: Rayos Eléctricos"
+                    className="dark-input w-full px-4 py-3 rounded-xl text-base font-medium"
+                  />
+                </div>
+                <div>
+                  <FieldLabel>Nombre del entrenador</FieldLabel>
+                  <input
+                    type="text"
+                    value={formData.trainerName}
+                    onChange={e => setFormData(prev => ({ ...prev, trainerName: e.target.value }))}
+                    required
+                    placeholder="Ej: Ash Ketchum"
+                    className="dark-input w-full px-4 py-3 rounded-xl text-base font-medium"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-5">
+                <div>
+                  <FieldLabel>Victorias</FieldLabel>
+                  <NumberStepper value={formData.wins} onChange={v => setFormData(prev => ({ ...prev, wins: v }))} />
+                </div>
+                <div>
+                  <FieldLabel>Partidas Jugadas</FieldLabel>
+                  <NumberStepper value={formData.gamesPlayed} onChange={v => setFormData(prev => ({ ...prev, gamesPlayed: Math.max(v, formData.wins) }))} />
+                </div>
+              </div>
+            </form>
+          </div>
+
+          {/* Team slots card */}
+          <div className="glass-card p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold flex items-center gap-2" style={{ color: '#e8eaf6' }}>
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#4fc3f7" strokeWidth="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                Equipo Pokémon
+              </h3>
+              <span
+                className="text-sm font-bold px-3 py-1 rounded-lg"
+                style={{
+                  background: formData.pokemons.length === 10
+                    ? 'rgba(245,158,11,0.1)'
+                    : 'rgba(79,195,247,0.1)',
+                  border: `1px solid ${formData.pokemons.length === 10 ? 'rgba(245,158,11,0.3)' : 'rgba(79,195,247,0.2)'}`,
+                  color: formData.pokemons.length === 10 ? '#f59e0b' : '#4fc3f7',
+                }}
+              >
+                {formData.pokemons.length} / 10
+              </span>
+            </div>
+
+            {/* Slot grid */}
+            <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
+              {slots.map((_, i) => {
+                const pokemon = formData.pokemons[i]
+                return (
+                  <div
+                    key={i}
+                    className="relative group rounded-xl flex flex-col items-center justify-center transition-all duration-200"
+                    style={{
+                      aspectRatio: '1',
+                      background: pokemon ? 'rgba(79,195,247,0.05)' : 'rgba(255,255,255,0.02)',
+                      border: pokemon
+                        ? '1px solid rgba(79,195,247,0.25)'
+                        : '1px dashed rgba(79,195,247,0.1)',
+                      padding: '0.5rem',
+                    }}
+                  >
+                    {pokemon ? (
+                      <>
+                        <img
+                          src={pokemon.image}
+                          alt={pokemon.name}
+                          className="w-full h-full object-contain"
+                          style={{ maxWidth: 52, maxHeight: 52, imageRendering: 'pixelated' }}
+                          crossOrigin="anonymous"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removePokemon(i)}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+                          style={{ background: '#ef4444', boxShadow: '0 0 8px rgba(239,68,68,0.5)' }}
+                          aria-label={`Quitar ${pokemon.name}`}
+                        >
+                          ×
+                        </button>
+                        <span
+                          className="text-center mt-1 leading-tight"
+                          style={{ fontSize: '0.55rem', color: '#64748b', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        >
+                          {pokemon.name}
+                        </span>
+                      </>
+                    ) : (
+                      <span style={{ fontSize: '0.55rem', color: '#2d3748' }}>#{i + 1}</span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="submit"
+              form="team-form"
+              className="btn-glow flex-1 sm:flex-none px-8 py-3 rounded-xl text-sm font-bold tracking-wider uppercase"
+            >
+              {isEditing ? 'Actualizar equipo' : 'Guardar equipo'}
+            </button>
+            {isEditing && (
+              <>
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold tracking-wider uppercase transition-all duration-200"
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid rgba(79,195,247,0.2)',
+                    color: '#94a3b8',
+                  }}
+                  onMouseEnter={e => {
+                    const el = e.currentTarget as HTMLElement
+                    el.style.borderColor = 'rgba(79,195,247,0.4)'
+                    el.style.color = '#4fc3f7'
+                  }}
+                  onMouseLeave={e => {
+                    const el = e.currentTarget as HTMLElement
+                    el.style.borderColor = 'rgba(79,195,247,0.2)'
+                    el.style.color = '#94a3b8'
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => editingId !== null && handleDelete(editingId)}
+                  className="flex-1 sm:flex-none px-6 py-3 rounded-xl text-sm font-bold tracking-wider uppercase transition-all duration-200"
+                  style={{
+                    background: 'rgba(239,68,68,0.1)',
+                    border: '1px solid rgba(239,68,68,0.3)',
+                    color: '#ef4444',
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.18)'
+                    ;(e.currentTarget as HTMLElement).style.boxShadow = '0 0 15px rgba(239,68,68,0.2)'
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)'
+                    ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
+                  }}
+                >
+                  Eliminar
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Pokemon picker column */}
+        <div className="glass-card p-5 flex flex-col" style={{ maxHeight: '80vh', minHeight: 400 }}>
+          <h3 className="text-base font-bold mb-4 flex items-center gap-2" style={{ color: '#e8eaf6' }}>
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="#4fc3f7" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            Añadir Pokémon
+            <span className="ml-auto text-xs" style={{ color: formData.pokemons.length >= 10 ? '#f59e0b' : '#475569' }}>
+              {formData.pokemons.length >= 10 ? 'Equipo lleno' : `${10 - formData.pokemons.length} slots libres`}
+            </span>
+          </h3>
+
+          {/* Search */}
+          <div className="relative mb-3">
+            <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Buscar Pokémon..."
+              className="dark-input w-full pl-9 pr-4 py-2.5 rounded-xl text-sm"
+            />
+          </div>
+
+          {/* Type filter */}
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            <button
+              type="button"
+              onClick={() => setTypeFilter('all')}
+              className="px-2.5 py-1 rounded-lg text-xs font-bold uppercase transition-all"
+              style={{
+                background: typeFilter === 'all' ? 'rgba(79,195,247,0.2)' : 'rgba(255,255,255,0.04)',
+                border: `1px solid ${typeFilter === 'all' ? 'rgba(79,195,247,0.5)' : 'rgba(79,195,247,0.08)'}`,
+                color: typeFilter === 'all' ? '#4fc3f7' : '#64748b',
+              }}
+            >
+              Todos
+            </button>
+            {ALL_TYPES.map(type => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setTypeFilter(type === typeFilter ? 'all' : type)}
+                className={`type-badge cursor-pointer transition-all`}
+                style={{
+                  opacity: typeFilter !== 'all' && typeFilter !== type ? 0.4 : 1,
+                  transform: typeFilter === type ? 'scale(1.05)' : 'scale(1)',
+                }}
+              >
+                <span className={`type-${type}`} style={{ display: 'contents' }}>
+                  {type}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Pokemon list */}
+          <div
+            className="flex-1 overflow-y-auto pr-1"
+            style={{ scrollbarWidth: 'thin' }}
+          >
+            <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+              {filteredPokemon.map(pokemon => {
+                const inTeam = formData.pokemons.some(p => p.name === pokemon.name)
+                const full = formData.pokemons.length >= 10
+                return (
+                  <button
+                    key={pokemon.id}
+                    type="button"
+                    onClick={() => !inTeam && !full && addPokemon(pokemon)}
+                    disabled={inTeam || full}
+                    className="flex flex-col items-center justify-center rounded-xl p-2 text-center transition-all duration-200"
+                    style={{
+                      background: inTeam
+                        ? 'rgba(16,185,129,0.1)'
+                        : 'rgba(255,255,255,0.03)',
+                      border: inTeam
+                        ? '1px solid rgba(16,185,129,0.3)'
+                        : '1px solid rgba(79,195,247,0.06)',
+                      opacity: full && !inTeam ? 0.4 : 1,
+                      cursor: inTeam || full ? 'default' : 'pointer',
+                    }}
+                    onMouseEnter={e => {
+                      if (!inTeam && !full) {
+                        const el = e.currentTarget as HTMLElement
+                        el.style.borderColor = 'rgba(79,195,247,0.3)'
+                        el.style.background = 'rgba(79,195,247,0.07)'
+                        el.style.transform = 'translateY(-1px)'
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!inTeam && !full) {
+                        const el = e.currentTarget as HTMLElement
+                        el.style.borderColor = 'rgba(79,195,247,0.06)'
+                        el.style.background = 'rgba(255,255,255,0.03)'
+                        el.style.transform = 'translateY(0)'
+                      }
+                    }}
+                    aria-label={`${inTeam ? 'Ya en equipo: ' : 'Añadir '}${pokemon.name}`}
+                  >
+                    <img
+                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}
+                      alt={pokemon.name}
+                      className="w-10 h-10 object-contain"
+                      style={{ imageRendering: 'pixelated' }}
+                      crossOrigin="anonymous"
+                    />
+                    <span style={{ fontSize: '0.6rem', color: inTeam ? '#10b981' : '#64748b', marginTop: 2, fontWeight: 600 }}>
+                      {pokemon.name}
+                    </span>
+                    <div className="flex gap-1 flex-wrap justify-center" style={{ marginTop: 2 }}>
+                      {pokemon.types.map((type, idx) => (
+                        <span key={idx} className={`type-badge type-${type}`} style={{ fontSize: '0.5rem', padding: '1px 4px' }}>
+                          {type}
+                        </span>
+                      ))}
+                    </div>
+                    {inTeam && (
+                      <span style={{ fontSize: '0.55rem', color: '#10b981', marginTop: 2 }}>En equipo</span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+            {filteredPokemon.length === 0 && (
+              <div className="text-center py-8" style={{ color: '#475569' }}>
+                <p className="text-sm">Sin resultados para &quot;{searchQuery}&quot;</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Existing teams to edit */}
+      {existingTeams.length > 0 && !isEditing && (
+        <div className="mt-8">
+          <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#e8eaf6' }}>
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            Editar equipo existente
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {existingTeams.map(team => (
+              <button
+                key={team.id}
+                type="button"
+                onClick={() => handleEdit(team)}
+                className="glass-card p-4 text-left transition-all duration-200"
+                style={{ cursor: 'pointer' }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.borderColor = 'rgba(245,158,11,0.4)'
+                  el.style.boxShadow = '0 0 20px rgba(245,158,11,0.1)'
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.borderColor = 'rgba(79,195,247,0.12)'
+                  el.style.boxShadow = ''
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  {team.pokemons[0] && (
+                    <img
+                      src={team.pokemons[0].image}
+                      alt={team.pokemons[0].name}
+                      className="w-10 h-10 flex-shrink-0"
+                      style={{ imageRendering: 'pixelated' }}
+                      crossOrigin="anonymous"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-bold text-sm truncate" style={{ color: '#e8eaf6' }}>
+                      {team.teamName}
+                    </p>
+                    <p className="text-xs" style={{ color: '#64748b' }}>
+                      {team.trainerName} · {team.wins}W-{(team.gamesPlayed || 0) - team.wins}L ({team.gamesPlayed || 0}G)
+                    </p>
+                  </div>
+                  <svg className="w-4 h-4 ml-auto flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
