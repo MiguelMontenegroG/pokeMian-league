@@ -89,6 +89,7 @@ export function useTeams() {
   }
 
   const addTeam = async (team: Omit<Team, 'id'>) => {
+    console.log('🔵 ADD TEAM CALLED:', team)
     try {
       const calculatedPoints = team.wins * 3
       const newTeam = {
@@ -97,7 +98,11 @@ export function useTeams() {
         pokemons: JSON.stringify(team.pokemons)
       }
       
+      console.log('🔵 Is Supabase configured?', isSupabaseConfigured)
+      console.log('🔵 Supabase client exists?', !!supabase)
+      
       if (!isSupabaseConfigured) {
+        console.log('⚠️ Using localStorage fallback')
         // Fallback to localStorage
         const updatedTeams = [...teams, { ...newTeam, id: Date.now() }]
         setTeams(updatedTeams)
@@ -105,12 +110,18 @@ export function useTeams() {
         return updatedTeams[updatedTeams.length - 1]
       }
       
+      console.log('✅ Inserting into Supabase:', newTeam)
       const { data, error } = await supabase
         .from('teams')
         .insert([newTeam])
         .select()
       
-      if (error) throw error
+      if (error) {
+        console.error('❌ SUPABASE ERROR:', error)
+        throw error
+      }
+      
+      console.log('✅ SUPABASE SUCCESS:', data)
       
       if (data && data.length > 0) {
         const parsedTeam = {
@@ -123,7 +134,7 @@ export function useTeams() {
         return parsedTeam
       }
     } catch (err: any) {
-      console.error('Error adding team:', err)
+      console.error('❌ Error adding team:', err)
       throw err
     }
   }
