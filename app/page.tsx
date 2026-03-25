@@ -189,9 +189,12 @@ export default function App() {
       <>
         <AdminPanel 
           teams={teams} 
-          setTeams={setTeams} 
-          onLogout={handleLogout}
+          setTeams={setTeams}
+          addTeam={addTeam}
+          updateTeam={updateTeam}
+          deleteTeam={deleteTeam}
           trainersData={{ trainers, addTrainer, updateTrainer, deleteTrainer }}
+          onLogout={handleLogout}
         />
         <LoginModal isOpen={loginModalOpen} onClose={() => setLoginModalOpen(false)} onLogin={handleLoginSuccess} />
       </>

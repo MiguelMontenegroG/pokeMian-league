@@ -13,6 +13,9 @@ import TrainerDetail from '@/components/TrainerDetail'
 interface AdminPanelProps {
   teams: Team[]
   setTeams: React.Dispatch<React.SetStateAction<Team[]>>
+  addTeam?: (t: Omit<Team, 'id'>) => Promise<void | any>
+  updateTeam?: (t: Team) => Promise<void>
+  deleteTeam?: (id: number) => Promise<void>
   onLogout: () => void
   trainersData?: {
     trainers: Trainer[]
@@ -80,7 +83,7 @@ function TrainerIcon({ className }: { className?: string }) {
   )
 }
 
-export default function AdminPanel({ teams, setTeams, onLogout, trainersData }: AdminPanelProps) {
+export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps, updateTeam: updateTeamFromProps, deleteTeam: deleteTeamFromProps, onLogout, trainersData }: AdminPanelProps) {
   const [currentView, setCurrentView] = useState<AdminView>('standings')
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null)
   
@@ -94,10 +97,26 @@ export default function AdminPanel({ teams, setTeams, onLogout, trainersData }: 
   const teamsLoading = false // Data comes from parent, no local loading needed
   const trainersLoading = !trainersData // Only loading if trainersData not provided
 
-  const addTeam = (team: Omit<Team, 'id'>) => {
-    const calculatedPoints = team.wins * 3
-    setTeams(prev => [...prev, { ...team, points: calculatedPoints, id: Date.now() }])
-    setCurrentView('teams')
+  const addTeam = async (team: Omit<Team, 'id'>) => {
+    console.log('🟠 ADMIN PANEL ADD TEAM:', team)
+    try {
+      const calculatedPoints = team.wins * 3
+      const newTeamWithId = { ...team, points: calculatedPoints, id: Date.now() }
+      
+      // Actualizar estado local inmediatamente (optimistic update)
+      setTeams(prev => [...prev, newTeamWithId])
+      setCurrentView('teams')
+      
+      // Intentar guardar en Supabase si está disponible
+      if (addTeamFromProps) {
+        console.log('✅ Calling addTeam from props (Supabase)')
+        await addTeamFromProps(team)
+      } else {
+        console.log('⚠️ No addTeam from props, using optimistic only')
+      }
+    } catch (error) {
+      console.error('Error adding team:', error)
+    }
   }
 
   const updateTeam = (updated: Team) => {
