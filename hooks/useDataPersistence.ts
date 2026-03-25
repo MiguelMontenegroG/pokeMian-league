@@ -92,8 +92,12 @@ export function useTeams() {
     console.log('🔵 ADD TEAM CALLED:', team)
     try {
       const calculatedPoints = team.wins * 3
+      // Mapear camelCase a snake_case para Supabase
       const newTeam = {
-        ...team,
+        team_name: team.teamName,
+        trainer_name: team.trainerName,
+        wins: team.wins,
+        games_played: team.gamesPlayed,
         points: calculatedPoints,
         pokemons: JSON.stringify(team.pokemons)
       }
@@ -104,7 +108,7 @@ export function useTeams() {
       if (!isSupabaseConfigured) {
         console.log('⚠️ Using localStorage fallback')
         // Fallback to localStorage
-        const updatedTeams = [...teams, { ...newTeam, id: Date.now() }]
+        const updatedTeams = [...teams, { ...team, points: calculatedPoints, id: Date.now() }]
         setTeams(updatedTeams)
         localStorage.setItem('pokeMianTeams', JSON.stringify(updatedTeams))
         return updatedTeams[updatedTeams.length - 1]
@@ -126,6 +130,9 @@ export function useTeams() {
       if (data && data.length > 0) {
         const parsedTeam = {
           ...data[0],
+          teamName: data[0].team_name,
+          trainerName: data[0].trainer_name,
+          gamesPlayed: data[0].games_played,
           pokemons: typeof data[0].pokemons === 'string' 
             ? JSON.parse(data[0].pokemons) 
             : data[0].pokemons
