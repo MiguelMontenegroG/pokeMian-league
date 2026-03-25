@@ -1235,10 +1235,16 @@ export default function TeamForm({ onSave, onUpdate, onDelete, existingTeams }: 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('🟢 FORM SUBMITTED')
+    console.log('🟢 Is editing?', isEditing)
+    console.log('🟢 Form data:', formData)
+    
     if (isEditing && editingId !== null) {
+      console.log('🟢 Calling onUpdate with id:', editingId)
       onUpdate({ ...formData, id: editingId })
       showNotification('Equipo actualizado correctamente')
     } else {
+      console.log('🟢 Calling onSave')
       onSave(formData)
       showNotification('Equipo creado correctamente')
     }
