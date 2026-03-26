@@ -1342,15 +1342,29 @@ export default function TeamForm({ onSave, onUpdate, onDelete, existingTeams }: 
                   />
                 </div>
                 <div>
-                  <FieldLabel>Nombre del entrenador</FieldLabel>
-                  <input
-                    type="text"
-                    value={formData.trainerName}
-                    onChange={e => setFormData(prev => ({ ...prev, trainerName: e.target.value }))}
-                    required
-                    placeholder="Ej: Ash Ketchum"
-                    className="dark-input w-full px-4 py-3 rounded-xl text-base font-medium"
-                  />
+                  <FieldLabel>Entrenador</FieldLabel>
+                  {trainers && trainers.length > 0 ? (
+                    <select
+                      value={formData.trainerName}
+                      onChange={e => setFormData(prev => ({ ...prev, trainerName: e.target.value }))}
+                      required
+                      className="dark-input w-full px-4 py-3 rounded-xl text-base font-medium"
+                      style={{ color: '#e8eaf6' }}
+                    >
+                      <option value="" disabled>Selecciona un entrenador</option>
+                      {trainers.map(trainer => (
+                        <option key={trainer.name} value={trainer.name} style={{ color: '#000' }}>
+                          {trainer.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="p-4 rounded-xl border-2 border-dashed" style={{ borderColor: 'rgba(245, 158, 11, 0.3)', background: 'rgba(245, 158, 11, 0.05)' }}>
+                      <p className="text-sm" style={{ color: '#f59e0b' }}>
+                        ⚠️ No hay entrenadores registrados. Primero debes crear un entrenador en la pestaña "Entrenadores".
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-5">

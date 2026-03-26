@@ -154,15 +154,19 @@ export function useTeams() {
   const updateTeam = async (updated: Team) => {
     try {
       const calculatedPoints = updated.wins * 3
+      // Mapear camelCase a snake_case para Supabase
       const teamToUpdate = {
-        ...updated,
+        team_name: updated.teamName,
+        trainer_name: updated.trainerName,
+        wins: updated.wins,
+        games_played: updated.gamesPlayed,
         points: calculatedPoints,
         pokemons: JSON.stringify(updated.pokemons)
       }
       
       if (!isSupabaseConfigured) {
         // Fallback to localStorage
-        const updatedTeams = teams.map(t => t.id === updated.id ? { ...teamToUpdate, id: updated.id } : t)
+        const updatedTeams = teams.map(t => t.id === updated.id ? { ...updated, points: calculatedPoints } : t)
         setTeams(updatedTeams)
         localStorage.setItem('pokeMianTeams', JSON.stringify(updatedTeams))
         return
@@ -176,14 +180,7 @@ export function useTeams() {
       if (error) throw error
       
       // Update local state
-      const parsedTeam = {
-        ...updated,
-        points: calculatedPoints,
-        pokemons: typeof updated.pokemons === 'string'
-          ? JSON.parse(updated.pokemons)
-          : updated.pokemons
-      }
-      setTeams(prev => prev.map(t => t.id === updated.id ? parsedTeam : t))
+      setTeams(prev => prev.map(t => t.id === updated.id ? { ...updated, points: calculatedPoints } : t))
     } catch (err: any) {
       console.error('Error updating team:', err)
       throw err

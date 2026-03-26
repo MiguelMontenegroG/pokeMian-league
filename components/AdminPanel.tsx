@@ -137,9 +137,8 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
   const handleEditTrainer = (trainer: Trainer) => {
     // Abrir formulario de edición con el entrenador seleccionado
     console.log('Editando entrenador:', trainer)
-    // Aquí deberíamos abrir TrainerForm en modo edición
-    // Por ahora, solo mostramos un mensaje
-    alert('Funcionalidad de editar entrenador en desarrollo...')
+    setSelectedTrainer(trainer)
+    setCurrentView('create-trainer') // Reutilizamos la vista de crear
   }
 
   if (teamsLoading || trainersLoading) {
