@@ -282,8 +282,12 @@ export function useTrainers() {
 
   const addTrainer = async (trainer: Omit<Trainer, 'id'>) => {
     try {
+      // Mapear camelCase a snake_case para Supabase
       const newTrainer = {
-        ...trainer,
+        name: trainer.name,
+        favorite_pokemon: trainer.favoritePokemon,
+        favorite_pokemon_image: trainer.favoritePokemonImage || null,
+        description: trainer.description || null,
         badges: JSON.stringify(trainer.badges)
       }
       
@@ -305,6 +309,8 @@ export function useTrainers() {
       if (data && data.length > 0) {
         const parsedTrainer = {
           ...data[0],
+          favoritePokemon: data[0].favorite_pokemon,
+          favoritePokemonImage: data[0].favorite_pokemon_image,
           badges: typeof data[0].badges === 'string'
             ? JSON.parse(data[0].badges)
             : data[0].badges
@@ -320,14 +326,18 @@ export function useTrainers() {
 
   const updateTrainer = async (updated: Trainer) => {
     try {
+      // Mapear camelCase a snake_case para Supabase
       const trainerToUpdate = {
-        ...updated,
+        name: updated.name,
+        favorite_pokemon: updated.favoritePokemon,
+        favorite_pokemon_image: updated.favoritePokemonImage || null,
+        description: updated.description || null,
         badges: JSON.stringify(updated.badges)
       }
       
       if (!isSupabaseConfigured) {
         // Fallback to localStorage
-        const updatedTrainers = trainers.map(t => t.id === updated.id ? { ...trainerToUpdate, id: updated.id } : t)
+        const updatedTrainers = trainers.map(t => t.id === updated.id ? { ...updated } : t)
         setTrainers(updatedTrainers)
         localStorage.setItem('pokeMianTrainers', JSON.stringify(updatedTrainers))
         return
@@ -341,13 +351,7 @@ export function useTrainers() {
       if (error) throw error
       
       // Update local state
-      const parsedTrainer = {
-        ...updated,
-        badges: typeof updated.badges === 'string'
-          ? JSON.parse(updated.badges)
-          : updated.badges
-      }
-      setTrainers(prev => prev.map(t => t.id === updated.id ? parsedTrainer : t))
+      setTrainers(prev => prev.map(t => t.id === updated.id ? updated : t))
     } catch (err: any) {
       console.error('Error updating trainer:', err)
       throw err
