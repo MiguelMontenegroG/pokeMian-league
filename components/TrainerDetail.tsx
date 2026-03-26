@@ -10,6 +10,13 @@ interface Props {
 export default function TrainerDetail({ trainer, onBack }: Props) {
   const obtainedBadges = trainer.badges.filter(b => b.obtained).length
   const allBadgesObtained = obtainedBadges === 8
+  const [isEditing, setIsEditing] = useState(false)
+
+  const handleEditClick = () => {
+    setIsEditing(true)
+    // Aquí iría la lógica para abrir el formulario de edición
+    console.log('Editar entrenador:', trainer.name)
+  }
 
   return (
     <div className="animate-fade-up">

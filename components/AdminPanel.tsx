@@ -134,6 +134,14 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
     setCurrentView('trainer-detail')
   }
 
+  const handleEditTrainer = (trainer: Trainer) => {
+    // Abrir formulario de edición con el entrenador seleccionado
+    console.log('Editando entrenador:', trainer)
+    // Aquí deberíamos abrir TrainerForm en modo edición
+    // Por ahora, solo mostramos un mensaje
+    alert('Funcionalidad de editar entrenador en desarrollo...')
+  }
+
   if (teamsLoading || trainersLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'rgba(8, 11, 20, 0.98)' }}>
@@ -301,7 +309,11 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
           </>
         )}
         {currentView === 'trainer-detail' && selectedTrainer && (
-          <TrainerDetail trainer={selectedTrainer} onBack={() => setCurrentView('trainers')} />
+          <TrainerDetail 
+            trainer={selectedTrainer} 
+            onBack={() => setCurrentView('trainers')}
+            onEdit={handleEditTrainer}
+          />
         )}
         {currentView === 'create-trainer' && (
           <TrainerForm
