@@ -73,9 +73,14 @@ export function useTeams() {
       if (error) throw error
       
       if (data) {
-        // Parse JSON strings back to objects
+        // Parse JSON strings back to objects AND convert snake_case to camelCase
         const parsed = data.map(team => ({
-          ...team,
+          id: team.id,
+          teamName: team.team_name,
+          trainerName: team.trainer_name,
+          wins: team.wins,
+          gamesPlayed: team.games_played,
+          points: team.points,
           pokemons: typeof team.pokemons === 'string' ? JSON.parse(team.pokemons) : team.pokemons
         }))
         setTeams(parsed)
@@ -265,9 +270,13 @@ export function useTrainers() {
       if (error) throw error
       
       if (data) {
-        // Parse JSON strings back to objects
+        // Parse JSON strings back to objects AND convert snake_case to camelCase
         const parsed = data.map(trainer => ({
-          ...trainer,
+          id: trainer.id,
+          name: trainer.name,
+          favoritePokemon: trainer.favorite_pokemon,
+          favoritePokemonImage: trainer.favorite_pokemon_image,
+          description: trainer.description,
           badges: typeof trainer.badges === 'string' ? JSON.parse(trainer.badges) : trainer.badges
         }))
         setTrainers(parsed)
