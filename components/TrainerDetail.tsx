@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import type { Trainer } from './TrainersView'
 
 interface Props {
