@@ -251,6 +251,9 @@ export default function TrainerDetail({ trainer, onBack }: Props) {
           <p className="text-base" style={{ color: '#e8eaf6' }}>
             {trainer.name} ha conseguido las 8 medallas de Johto y puede competir en la Liga Pokémon
           </p>
+          <p className="text-lg font-bold mt-3" style={{ color: '#f59e0b', textShadow: '0 0 10px rgba(245, 158, 11, 0.5)' }}>
+            ✨ ¡Clasifica a la PokeMian League! ✨
+          </p>
         </div>
       )}
     </div>

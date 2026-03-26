@@ -1126,6 +1126,7 @@ interface Props {
   onUpdate: (team: Team) => void
   onDelete: (id: number) => void
   existingTeams: Team[]
+  trainers?: Trainer[] // Lista de entrenadores disponibles
 }
 
 function FieldLabel({ children }: { children: React.ReactNode }) {

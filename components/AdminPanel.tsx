@@ -283,6 +283,7 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
             onUpdate={updateTeam}
             onDelete={deleteTeam}
             existingTeams={teams}
+            trainers={trainers}
           />
         )}
         {currentView === 'trainers' && !selectedTrainer && (
