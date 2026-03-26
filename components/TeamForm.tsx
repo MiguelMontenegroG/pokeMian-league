@@ -1185,7 +1185,7 @@ function NumberStepper({
   )
 }
 
-export default function TeamForm({ onSave, onUpdate, onDelete, existingTeams }: Props) {
+export default function TeamForm({ onSave, onUpdate, onDelete, existingTeams, trainers }: Props) {
   const [isEditing, setIsEditing] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [typeFilter, setTypeFilter] = useState<string>('all')
