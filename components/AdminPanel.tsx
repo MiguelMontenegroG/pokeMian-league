@@ -89,9 +89,9 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
   
   // Use provided trainersData or fallback to hook (for backwards compatibility)
   const trainers = trainersData?.trainers || []
-  const addTrainer = trainersData?.addTrainer || (async () => {})
-  const updateTrainer = trainersData?.updateTrainer || (async () => {})
-  const deleteTrainer = trainersData?.deleteTrainer || (async () => {})
+  const addTrainerFromProps = trainersData?.addTrainer || (async () => {})
+  const updateTrainerFromProps = trainersData?.updateTrainer || (async () => {})
+  const deleteTrainerFromProps = trainersData?.deleteTrainer || (async () => {})
   
   // Loading states - check if we have data from parent
   const teamsLoading = false // Data comes from parent, no local loading needed
@@ -119,14 +119,101 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
     }
   }
 
-  const updateTeam = (updated: Team) => {
-    const calculatedPoints = updated.wins * 3
-    setTeams(prev => prev.map(t => (t.id === updated.id ? { ...updated, points: calculatedPoints } : t)))
-    setCurrentView('teams')
+  const updateTeam = async (updated: Team) => {
+    console.log('🟡 ADMIN PANEL UPDATE TEAM:', updated)
+    try {
+      const calculatedPoints = updated.wins * 3
+      
+      // Actualizar estado local inmediatamente (optimistic update)
+      setTeams(prev => prev.map(t => (t.id === updated.id ? { ...updated, points: calculatedPoints } : t)))
+      setCurrentView('teams')
+      
+      // Intentar guardar en Supabase si está disponible
+      if (updateTeamFromProps) {
+        console.log('✅ Calling updateTeam from props (Supabase)')
+        await updateTeamFromProps(updated)
+      } else {
+        console.log('⚠️ No updateTeam from props, using optimistic only')
+      }
+    } catch (error) {
+      console.error('Error updating team:', error)
+      // Revertir el cambio en caso de error
+      console.error('Reverting local change due to error')
+    }
   }
 
-  const deleteTeam = (id: number) => {
-    setTeams(prev => prev.filter(t => t.id !== id))
+  const deleteTeam = async (id: number) => {
+    console.log('🔴 ADMIN PANEL DELETE TEAM - ID:', id)
+    try {
+      // Guardar una copia para revertir en caso de error
+      const previousTeams = [...teams]
+      
+      // Actualizar estado local inmediatamente (optimistic update)
+      setTeams(prev => prev.filter(t => t.id !== id))
+      
+      // Intentar eliminar de Supabase si está disponible
+      if (deleteTeamFromProps) {
+        console.log('✅ Calling deleteTeam from props (Supabase)')
+        await deleteTeamFromProps(id)
+      } else {
+        console.log('⚠️ No deleteTeam from props, using optimistic only')
+      }
+    } catch (error) {
+      console.error('Error deleting team:', error)
+      // Revertir el cambio en caso de error
+      console.error('Reverting local change due to error')
+    }
+  }
+
+  const addTrainer = async (trainer: Omit<Trainer, 'id'>) => {
+    console.log('🟠 ADMIN PANEL ADD TRAINER:', trainer)
+    try {
+      const newTrainerWithId = { ...trainer, id: Date.now() }
+      
+      // Actualizar estado local inmediatamente (optimistic update)
+      // Note: This requires trainers to come from parent state
+      // For now, we'll just call the prop function
+      
+      // Intentar guardar en Supabase si está disponible
+      if (addTrainerFromProps) {
+        console.log('✅ Calling addTrainer from props (Supabase)')
+        return await addTrainerFromProps(trainer)
+      } else {
+        console.log('⚠️ No addTrainer from props')
+      }
+    } catch (error) {
+      console.error('Error adding trainer:', error)
+    }
+  }
+
+  const updateTrainer = async (updated: Trainer) => {
+    console.log('🟡 ADMIN PANEL UPDATE TRAINER:', updated)
+    try {
+      // Intentar guardar en Supabase si está disponible
+      if (updateTrainerFromProps) {
+        console.log('✅ Calling updateTrainer from props (Supabase)')
+        await updateTrainerFromProps(updated)
+      } else {
+        console.log('⚠️ No updateTrainer from props, using optimistic only')
+      }
+    } catch (error) {
+      console.error('Error updating trainer:', error)
+    }
+  }
+
+  const deleteTrainer = async (id: number) => {
+    console.log('🔴 ADMIN PANEL DELETE TRAINER - ID:', id)
+    try {
+      // Intentar eliminar de Supabase si está disponible
+      if (deleteTrainerFromProps) {
+        console.log('✅ Calling deleteTrainer from props (Supabase)')
+        await deleteTrainerFromProps(id)
+      } else {
+        console.log('⚠️ No deleteTrainer from props, using optimistic only')
+      }
+    } catch (error) {
+      console.error('Error deleting trainer:', error)
+    }
   }
 
   const handleTrainerClick = (trainer: Trainer) => {

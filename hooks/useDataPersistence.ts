@@ -134,10 +134,12 @@ export function useTeams() {
       
       if (data && data.length > 0) {
         const parsedTeam = {
-          ...data[0],
+          id: data[0].id,
           teamName: data[0].team_name,
           trainerName: data[0].trainer_name,
+          wins: data[0].wins,
           gamesPlayed: data[0].games_played,
+          points: data[0].points,
           pokemons: typeof data[0].pokemons === 'string' 
             ? JSON.parse(data[0].pokemons) 
             : data[0].pokemons
@@ -152,7 +154,13 @@ export function useTeams() {
   }
 
   const updateTeam = async (updated: Team) => {
+    console.log('🟡 UPDATE TEAM CALLED:', updated)
     try {
+      if (!updated.id) {
+        console.error('❌ No team ID provided for update')
+        throw new Error('No team ID provided')
+      }
+      
       const calculatedPoints = updated.wins * 3
       // Mapear camelCase a snake_case para Supabase
       const teamToUpdate = {
@@ -164,7 +172,10 @@ export function useTeams() {
         pokemons: JSON.stringify(updated.pokemons)
       }
       
+      console.log('🟡 Is Supabase configured?', isSupabaseConfigured)
+      
       if (!isSupabaseConfigured) {
+        console.log('⚠️ Using localStorage fallback')
         // Fallback to localStorage
         const updatedTeams = teams.map(t => t.id === updated.id ? { ...updated, points: calculatedPoints } : t)
         setTeams(updatedTeams)
@@ -172,24 +183,51 @@ export function useTeams() {
         return
       }
       
-      const { error } = await supabase
+      console.log('🟡 Updating in Supabase:', teamToUpdate, 'ID:', updated.id)
+      const { data, error } = await supabase
         .from('teams')
         .update(teamToUpdate)
         .eq('id', updated.id)
+        .select()
       
-      if (error) throw error
+      if (error) {
+        console.error('❌ SUPABASE UPDATE ERROR:', error)
+        throw error
+      }
       
-      // Update local state
-      setTeams(prev => prev.map(t => t.id === updated.id ? { ...updated, points: calculatedPoints } : t))
+      console.log('✅ SUPABASE UPDATE SUCCESS:', data)
+      
+      if (data && data.length > 0) {
+        const parsedTeam = {
+          id: data[0].id,
+          teamName: data[0].team_name,
+          trainerName: data[0].trainer_name,
+          wins: data[0].wins,
+          gamesPlayed: data[0].games_played,
+          points: data[0].points,
+          pokemons: typeof data[0].pokemons === 'string' 
+            ? JSON.parse(data[0].pokemons) 
+            : data[0].pokemons
+        }
+        // Update local state with the returned data
+        setTeams(prev => prev.map(t => t.id === updated.id ? parsedTeam : t))
+      }
     } catch (err: any) {
-      console.error('Error updating team:', err)
+      console.error('❌ Error updating team:', err)
       throw err
     }
   }
 
   const deleteTeam = async (id: number) => {
+    console.log('🔴 DELETE TEAM CALLED - ID:', id)
     try {
+      if (!id) {
+        console.error('❌ No team ID provided for deletion')
+        throw new Error('No team ID provided')
+      }
+      
       if (!isSupabaseConfigured) {
+        console.log('⚠️ Using localStorage fallback for deletion')
         // Fallback to localStorage
         const updatedTeams = teams.filter(t => t.id !== id)
         setTeams(updatedTeams)
@@ -197,16 +235,21 @@ export function useTeams() {
         return
       }
       
+      console.log('🔴 Deleting from Supabase - ID:', id)
       const { error } = await supabase
         .from('teams')
         .delete()
         .eq('id', id)
       
-      if (error) throw error
+      if (error) {
+        console.error('❌ SUPABASE DELETE ERROR:', error)
+        throw error
+      }
       
+      console.log('✅ SUPABASE DELETE SUCCESS')
       setTeams(prev => prev.filter(t => t.id !== id))
     } catch (err: any) {
-      console.error('Error deleting team:', err)
+      console.error('❌ Error deleting team:', err)
       throw err
     }
   }
@@ -331,7 +374,13 @@ export function useTrainers() {
   }
 
   const updateTrainer = async (updated: Trainer) => {
+    console.log('🟡 UPDATE TRAINER CALLED:', updated)
     try {
+      if (!updated.id) {
+        console.error('❌ No trainer ID provided for update')
+        throw new Error('No trainer ID provided')
+      }
+      
       // Mapear camelCase a snake_case para Supabase
       const trainerToUpdate = {
         name: updated.name,
@@ -341,7 +390,10 @@ export function useTrainers() {
         badges: JSON.stringify(updated.badges)
       }
       
+      console.log('🟡 Is Supabase configured?', isSupabaseConfigured)
+      
       if (!isSupabaseConfigured) {
+        console.log('⚠️ Using localStorage fallback')
         // Fallback to localStorage
         const updatedTrainers = trainers.map(t => t.id === updated.id ? { ...updated } : t)
         setTrainers(updatedTrainers)
@@ -349,24 +401,50 @@ export function useTrainers() {
         return
       }
       
-      const { error } = await supabase
+      console.log('🟡 Updating in Supabase:', trainerToUpdate, 'ID:', updated.id)
+      const { data, error } = await supabase
         .from('trainers')
         .update(trainerToUpdate)
         .eq('id', updated.id)
+        .select()
       
-      if (error) throw error
+      if (error) {
+        console.error('❌ SUPABASE UPDATE ERROR:', error)
+        throw error
+      }
       
-      // Update local state
-      setTrainers(prev => prev.map(t => t.id === updated.id ? updated : t))
+      console.log('✅ SUPABASE UPDATE SUCCESS:', data)
+      
+      if (data && data.length > 0) {
+        const parsedTrainer = {
+          id: data[0].id,
+          name: data[0].name,
+          favoritePokemon: data[0].favorite_pokemon,
+          favoritePokemonImage: data[0].favorite_pokemon_image,
+          description: data[0].description,
+          badges: typeof data[0].badges === 'string'
+            ? JSON.parse(data[0].badges)
+            : data[0].badges
+        }
+        // Update local state with the returned data
+        setTrainers(prev => prev.map(t => t.id === updated.id ? parsedTrainer : t))
+      }
     } catch (err: any) {
-      console.error('Error updating trainer:', err)
+      console.error('❌ Error updating trainer:', err)
       throw err
     }
   }
 
   const deleteTrainer = async (id: number) => {
+    console.log('🔴 DELETE TRAINER CALLED - ID:', id)
     try {
+      if (!id) {
+        console.error('❌ No trainer ID provided for deletion')
+        throw new Error('No trainer ID provided')
+      }
+      
       if (!isSupabaseConfigured) {
+        console.log('⚠️ Using localStorage fallback for deletion')
         // Fallback to localStorage
         const updatedTrainers = trainers.filter(t => t.id !== id)
         setTrainers(updatedTrainers)
@@ -374,16 +452,21 @@ export function useTrainers() {
         return
       }
       
+      console.log('🔴 Deleting from Supabase - ID:', id)
       const { error } = await supabase
         .from('trainers')
         .delete()
         .eq('id', id)
       
-      if (error) throw error
+      if (error) {
+        console.error('❌ SUPABASE DELETE ERROR:', error)
+        throw error
+      }
       
+      console.log('✅ SUPABASE DELETE SUCCESS')
       setTrainers(prev => prev.filter(t => t.id !== id))
     } catch (err: any) {
-      console.error('Error deleting trainer:', err)
+      console.error('❌ Error deleting trainer:', err)
       throw err
     }
   }

@@ -47,16 +47,19 @@ const TYPE_GLOW: Record<string, string> = {
 
 function getTeamGradient(pokemons: Pokemon[]) {
   if (!pokemons.length) return TYPE_GRADIENT.normal
-  return TYPE_GRADIENT[pokemons[0].type] || TYPE_GRADIENT.normal
+  const firstType = pokemons[0].types?.[0] || pokemons[0].type as string || 'normal'
+  return TYPE_GRADIENT[firstType]
 }
 
 function getTeamGlow(pokemons: Pokemon[]) {
   if (!pokemons.length) return TYPE_GLOW.default
-  return TYPE_GLOW[pokemons[0].type] || TYPE_GLOW.default
+  const firstType = pokemons[0].types?.[0] || pokemons[0].type as string || 'normal'
+  return TYPE_GLOW[firstType] || TYPE_GLOW.default
 }
 
 function PokemonSlot({ pokemon, index }: { pokemon?: Pokemon; index: number }) {
   const [hovered, setHovered] = useState(false)
+  const firstType = pokemon?.types?.[0] || (pokemon?.type as string) || 'normal'
   return (
     <div
       className="relative flex flex-col items-center justify-center rounded-xl transition-all duration-300"
@@ -86,8 +89,8 @@ function PokemonSlot({ pokemon, index }: { pokemon?: Pokemon; index: number }) {
               maxWidth: 56,
               maxHeight: 56,
               filter: hovered
-                ? `drop-shadow(0 0 12px ${TYPE_GLOW[pokemon.types?.[0] || pokemon.type as string] || TYPE_GLOW.default})`
-                : `drop-shadow(0 0 6px ${TYPE_GLOW[pokemon.types?.[0] || pokemon.type as string] || TYPE_GLOW.default})`,
+                ? `drop-shadow(0 0 12px ${TYPE_GLOW[firstType] || TYPE_GLOW.default})`
+                : `drop-shadow(0 0 6px ${TYPE_GLOW[firstType] || TYPE_GLOW.default})`,
               transform: hovered ? 'translateY(-3px) scale(1.1)' : 'none',
               transition: 'all 0.3s ease',
             }}
