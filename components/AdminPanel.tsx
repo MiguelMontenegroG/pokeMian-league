@@ -170,14 +170,11 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
     try {
       const newTrainerWithId = { ...trainer, id: Date.now() }
       
-      // Actualizar estado local inmediatamente (optimistic update)
-      // Note: This requires trainers to come from parent state
-      // For now, we'll just call the prop function
-      
       // Intentar guardar en Supabase si está disponible
       if (addTrainerFromProps) {
         console.log('✅ Calling addTrainer from props (Supabase)')
-        return await addTrainerFromProps(trainer)
+        const result = await addTrainerFromProps(trainer)
+        return result
       } else {
         console.log('⚠️ No addTrainer from props')
       }
@@ -189,6 +186,10 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
   const updateTrainer = async (updated: Trainer) => {
     console.log('🟡 ADMIN PANEL UPDATE TRAINER:', updated)
     try {
+      // Actualizar estado local inmediatamente (optimistic update)
+      // Note: trainers come from parent state via props, so we can't directly modify
+      // The parent component handles state updates via useTrainers hook
+      
       // Intentar guardar en Supabase si está disponible
       if (updateTrainerFromProps) {
         console.log('✅ Calling updateTrainer from props (Supabase)')
@@ -217,13 +218,20 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
   }
 
   const handleTrainerClick = (trainer: Trainer) => {
+    console.log('🔵 TRAINER CLICKED:', trainer)
     setSelectedTrainer(trainer)
     setCurrentView('trainer-detail')
   }
 
+  const handleBackFromDetail = () => {
+    console.log('🔴 BACK FROM DETAIL - Clearing selectedTrainer')
+    setSelectedTrainer(null)
+    setCurrentView('trainers')
+  }
+
   const handleEditTrainer = (trainer: Trainer) => {
     // Abrir formulario de edición con el entrenador seleccionado
-    console.log('Editando entrenador:', trainer)
+    console.log('✏️ Editando entrenador:', trainer)
     setSelectedTrainer(trainer)
     setCurrentView('create-trainer') // Reutilizamos la vista de crear
   }
@@ -397,7 +405,7 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
         {currentView === 'trainer-detail' && selectedTrainer && (
           <TrainerDetail 
             trainer={selectedTrainer} 
-            onBack={() => setCurrentView('trainers')}
+            onBack={handleBackFromDetail}
             onEdit={handleEditTrainer}
           />
         )}

@@ -6,46 +6,78 @@ import type { Trainer } from './TrainersView'
 interface Props {
   trainer: Trainer
   onBack: () => void
+  onEdit?: (trainer: Trainer) => void
 }
 
-export default function TrainerDetail({ trainer, onBack }: Props) {
+export default function TrainerDetail({ trainer, onBack, onEdit }: Props) {
   const obtainedBadges = trainer.badges.filter(b => b.obtained).length
   const allBadgesObtained = obtainedBadges === 8
   const [isEditing, setIsEditing] = useState(false)
 
   const handleEditClick = () => {
-    setIsEditing(true)
-    // Aquí iría la lógica para abrir el formulario de edición
-    console.log('Editar entrenador:', trainer.name)
+    console.log('✏️ Editando entrenador:', trainer.name)
+    if (onEdit) {
+      onEdit(trainer)
+    }
   }
 
   return (
     <div className="animate-fade-up">
       {/* Back button */}
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 mb-6 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-        style={{
-          background: 'rgba(79,195,247,0.1)',
-          border: '1px solid rgba(79,195,247,0.2)',
-          color: '#4fc3f7',
-        }}
-        onMouseEnter={e => {
-          const el = e.currentTarget as HTMLElement
-          el.style.background = 'rgba(79,195,247,0.15)'
-          el.style.borderColor = 'rgba(79,195,247,0.4)'
-        }}
-        onMouseLeave={e => {
-          const el = e.currentTarget as HTMLElement
-          el.style.background = 'rgba(79,195,247,0.1)'
-          el.style.borderColor = 'rgba(79,195,247,0.2)'
-        }}
-      >
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-        Volver a entrenadores
-      </button>
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+          style={{
+            background: 'rgba(79,195,247,0.1)',
+            border: '1px solid rgba(79,195,247,0.2)',
+            color: '#4fc3f7',
+          }}
+          onMouseEnter={e => {
+            const el = e.currentTarget as HTMLElement
+            el.style.background = 'rgba(79,195,247,0.15)'
+            el.style.borderColor = 'rgba(79,195,247,0.4)'
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget as HTMLElement
+            el.style.background = 'rgba(79,195,247,0.1)'
+            el.style.borderColor = 'rgba(79,195,247,0.2)'
+          }}
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Volver a entrenadores
+        </button>
+        
+        {onEdit && (
+          <button
+            onClick={handleEditClick}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider transition-all"
+            style={{
+              background: 'rgba(245, 158, 11, 0.1)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              color: '#f59e0b',
+            }}
+            onMouseEnter={e => {
+              const el = e.currentTarget as HTMLElement
+              el.style.background = 'rgba(245, 158, 11, 0.2)'
+              el.style.boxShadow = '0 0 15px rgba(245, 158, 11, 0.3)'
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget as HTMLElement
+              el.style.background = 'rgba(245, 158, 11, 0.1)'
+              el.style.boxShadow = 'none'
+            }}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            Editar
+          </button>
+        )}
+      </div>
 
       {/* Profile Header */}
       <div className="glass-card p-8 mb-6">
