@@ -1388,16 +1388,18 @@ export default function TeamForm({ onSave, onUpdate, onDelete, existingTeams, tr
                   )}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-5">
-                <div>
-                  <FieldLabel>Victorias</FieldLabel>
-                  <NumberStepper value={formData.wins} onChange={v => setFormData(prev => ({ ...prev, wins: v }))} />
+              {isAdminLoggedIn && (
+                <div className="grid grid-cols-2 gap-5">
+                  <div>
+                    <FieldLabel>Victorias</FieldLabel>
+                    <NumberStepper value={formData.wins} onChange={v => setFormData(prev => ({ ...prev, wins: v }))} />
+                  </div>
+                  <div>
+                    <FieldLabel>Partidas Jugadas</FieldLabel>
+                    <NumberStepper value={formData.gamesPlayed} onChange={v => setFormData(prev => ({ ...prev, gamesPlayed: Math.max(v, formData.wins) }))} />
+                  </div>
                 </div>
-                <div>
-                  <FieldLabel>Partidas Jugadas</FieldLabel>
-                  <NumberStepper value={formData.gamesPlayed} onChange={v => setFormData(prev => ({ ...prev, gamesPlayed: Math.max(v, formData.wins) }))} />
-                </div>
-              </div>
+              )}
             </form>
           </div>
 

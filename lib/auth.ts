@@ -25,10 +25,15 @@ export async function loginTrainer(name: string, password: string): Promise<Trai
       .select('id, name, favorite_pokemon, favorite_pokemon_image, description')
       .eq('name', name)
       .eq('password', password)
-      .single()
+      .maybeSingle() // Usar maybeSingle en lugar de single para evitar errores con 0 resultados
 
-    if (error || !data) {
-      console.error('Error en login:', error?.message || 'Credenciales inválidas')
+    if (error) {
+      console.error('Error en login:', error.message)
+      return null
+    }
+    
+    if (!data) {
+      console.error('Credenciales inválidas: No se encontró el entrenador')
       return null
     }
 
