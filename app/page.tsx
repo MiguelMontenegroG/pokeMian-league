@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 import StandingsTable from '@/components/StandingsTable'
 import TeamsView from '@/components/TeamsView'
 import TeamForm from '@/components/TeamForm'
@@ -135,15 +136,17 @@ function AnimatedBackground() {
 }
 
 export default function App() {
+  const { trainer, isAdminLoggedIn, isLoading, loginAsTrainer, logout, logoutAdmin } = useAuth()
   const [currentView, setCurrentView] = useState<View>('standings')
+  const [showTeamForm, setShowTeamForm] = useState(false)
   const { teams, setTeams, loading: teamsLoading, error: teamsError, addTeam, updateTeam, deleteTeam, isSupabaseConfigured: teamsConfigured } = useTeams()
   const { trainers, setTrainers, loading: trainersLoading, error: trainersError, addTrainer, updateTrainer, deleteTrainer, isSupabaseConfigured: trainersConfigured } = useTrainers()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   
-  // Admin state
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false)
+  // Modal states
   const [loginModalOpen, setLoginModalOpen] = useState(false)
+  const [trainerLoginModalOpen, setTrainerLoginModalOpen] = useState(false)
   const [clickCount, setClickCount] = useState(0)
   const [clickTimer, setClickTimer] = useState<NodeJS.Timeout | null>(null)
 
@@ -174,12 +177,21 @@ export default function App() {
   }
 
   const handleLoginSuccess = () => {
-    setIsAdminLoggedIn(true)
     setLoginModalOpen(false)
   }
 
+  const handleTrainerLoginSuccess = () => {
+    setTrainerLoginModalOpen(false)
+  }
+
   const handleLogout = () => {
-    setIsAdminLoggedIn(false)
+    logout()
+    setShowTeamForm(false)
+    setCurrentView('standings')
+  }
+
+  const handleAdminLogout = () => {
+    logoutAdmin()
     setCurrentView('standings')
   }
 
@@ -194,15 +206,15 @@ export default function App() {
           updateTeam={updateTeam}
           deleteTeam={deleteTeam}
           trainersData={{ trainers, addTrainer, updateTrainer, deleteTrainer }}
-          onLogout={handleLogout}
+          onLogout={handleAdminLogout}
         />
         <LoginModal isOpen={loginModalOpen} onClose={() => setLoginModalOpen(false)} onLogin={handleLoginSuccess} />
       </>
     )
   }
 
-  // Loading state
-  if (teamsLoading || trainersLoading) {
+  // Loading state - show spinner while auth is initializing
+  if (isLoading || teamsLoading || trainersLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'rgba(8, 11, 20, 0.98)' }}>
         <div className="text-center">
@@ -217,6 +229,12 @@ export default function App() {
     <div className="relative min-h-screen" style={{ fontFamily: 'var(--font-rajdhani), Inter, system-ui, sans-serif' }}>
       <AnimatedBackground />
       <LoginModal isOpen={loginModalOpen} onClose={() => setLoginModalOpen(false)} onLogin={handleLoginSuccess} />
+      <LoginModal 
+        isOpen={trainerLoginModalOpen} 
+        onClose={() => setTrainerLoginModalOpen(false)} 
+        onLogin={handleTrainerLoginSuccess}
+        isTrainerMode={true}
+      />
       
       {/* Show warning if Supabase is not configured */}
       {(!teamsConfigured || !trainersConfigured) && <SupabaseWarning />}
@@ -300,6 +318,58 @@ export default function App() {
                   </button>
                 )
               })}
+              
+              {/* Trainer login/logout button */}
+              {trainer ? (
+                <div className="flex items-center gap-3 ml-4 pl-4 border-l border-gray-700">
+                  <span className="text-sm font-semibold" style={{ color: '#4fc3f7' }}>
+                    {trainer.name}
+                  </span>
+                  <button
+                    onClick={handleLogout}
+                    className="px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all"
+                    style={{
+                      background: 'rgba(239, 68, 68, 0.1)',
+                      color: '#ef4444',
+                      border: '1px solid rgba(239, 68, 68, 0.3)'
+                    }}
+                    onMouseEnter={e => {
+                      const el = e.currentTarget as HTMLElement
+                      el.style.background = 'rgba(239, 68, 68, 0.2)'
+                    }}
+                    onMouseLeave={e => {
+                      const el = e.currentTarget as HTMLElement
+                      el.style.background = 'rgba(239, 68, 68, 0.1)'
+                    }}
+                  >
+                    Salir
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setTrainerLoginModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold tracking-wide transition-all duration-200 border ml-2"
+                  style={{
+                    color: '#10b981',
+                    borderColor: 'rgba(16, 185, 129, 0.3)',
+                    background: 'rgba(16, 185, 129, 0.1)',
+                  }}
+                  onMouseEnter={e => {
+                    const el = e.currentTarget as HTMLElement
+                    el.style.background = 'rgba(16, 185, 129, 0.2)'
+                  }}
+                  onMouseLeave={e => {
+                    const el = e.currentTarget as HTMLElement
+                    el.style.background = 'rgba(16, 185, 129, 0.1)'
+                  }}
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  Soy Entrenador
+                </button>
+              )}
             </nav>
 
             {/* Mobile menu button */}
@@ -345,6 +415,45 @@ export default function App() {
                   </button>
                 )
               })}
+              
+              {/* Trainer login/logout mobile */}
+              {trainer ? (
+                <div className="pt-4 mt-4 border-t border-gray-700">
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm font-semibold" style={{ color: '#4fc3f7' }}>
+                      {trainer.name}
+                    </span>
+                    <button
+                      onClick={() => { handleLogout(); setMobileMenuOpen(false) }}
+                      className="px-4 py-2 rounded-xl text-xs font-bold uppercase"
+                      style={{
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        color: '#ef4444',
+                        border: '1px solid rgba(239, 68, 68, 0.3)'
+                      }}
+                    >
+                      Salir
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => { setTrainerLoginModalOpen(true); setMobileMenuOpen(false) }}
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold mx-2 mt-2"
+                  style={{
+                    color: '#10b981',
+                    borderColor: 'rgba(16, 185, 129, 0.3)',
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    border: '1px solid rgba(16, 185, 129, 0.3)'
+                  }}
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  Soy Entrenador
+                </button>
+              )}
             </nav>
           )}
         </div>
@@ -352,13 +461,37 @@ export default function App() {
 
       {/* Main content */}
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {currentView === 'standings' && (
+        {showTeamForm ? (
+          <TeamForm 
+            onSave={async (team) => {
+              await addTeam(team)
+              setShowTeamForm(false)
+              setCurrentView('teams')
+            }}
+            onUpdate={async (team) => {
+              await updateTeam(team)
+              setShowTeamForm(false)
+              setCurrentView('teams')
+            }}
+            onDelete={async (id) => {
+              await deleteTeam(id)
+              setShowTeamForm(false)
+              setCurrentView('teams')
+            }}
+            existingTeams={teams}
+            trainers={trainers}
+          />
+        ) : currentView === 'standings' && (
           <StandingsTable teams={teams} onNavigate={(id) => setCurrentView(id as View)} />
         )}
-        {currentView === 'teams' && (
-          <TeamsView teams={teams} />
+        {!showTeamForm && currentView === 'teams' && (
+          <TeamsView 
+            teams={teams} 
+            trainer={trainer}
+            onEdit={() => setShowTeamForm(true)}
+          />
         )}
-        {currentView === 'trainers' && (
+        {!showTeamForm && currentView === 'trainers' && (
           <TrainersView trainers={trainers} onTrainerClick={() => {}} />
         )}
       </main>

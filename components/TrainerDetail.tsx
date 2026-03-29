@@ -282,17 +282,17 @@ export default function TrainerDetail({ trainer, onBack, onEdit }: Props) {
           }}
         >
           <div className="flex items-center justify-center gap-3 mb-3">
-            <span className="text-4xl">🏆</span>
+            <span className="text-4xl"></span>
             <h3 className="text-2xl font-bold" style={{ color: '#f59e0b' }}>
-              ¡Entrenador de Leyenda!
+              ¡8 Medallas!
             </h3>
-            <span className="text-4xl">🏆</span>
+            <span className="text-4xl"></span>
           </div>
           <p className="text-base" style={{ color: '#e8eaf6' }}>
             {trainer.name} ha conseguido las 8 medallas de Johto y puede competir en la Liga Pokémon
           </p>
           <p className="text-lg font-bold mt-3" style={{ color: '#f59e0b', textShadow: '0 0 10px rgba(245, 158, 11, 0.5)' }}>
-            ✨ ¡Clasifica a la PokeMian League! ✨
+            ¡Clasifica a la PokeMian League!
           </p>
         </div>
       )}

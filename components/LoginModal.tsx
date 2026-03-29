@@ -1,29 +1,64 @@
 'use client'
 
 import { useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface LoginModalProps {
   isOpen: boolean
   onClose: () => void
   onLogin: () => void
+  isTrainerMode?: boolean // Nuevo prop para modo entrenador
 }
 
-export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
+export default function LoginModal({ isOpen, onClose, onLogin, isTrainerMode = false }: LoginModalProps) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const { loginAsTrainer, loginAsAdmin } = useAuth()
 
   if (!isOpen) return null
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (username === 'caterpie' && password === 'bidoof') {
-      onLogin()
-      setUsername('')
-      setPassword('')
-      setError('')
-    } else {
-      setError('Credenciales incorrectas')
+    setIsLoading(true)
+    setError('')
+
+    try {
+      if (isTrainerMode) {
+        // Login de entrenador
+        if (!username || !password) {
+          setError('Por favor ingresa usuario y contraseña')
+          setIsLoading(false)
+          return
+        }
+
+        const success = await loginAsTrainer(username, password)
+        if (success) {
+          onLogin()
+          setUsername('')
+          setPassword('')
+          setError('')
+        } else {
+          setError('Credenciales incorrectas. Verifica tu nombre y contraseña.')
+        }
+      } else {
+        // Login de admin (hardcoded por ahora)
+        if (username === 'caterpie' && password === 'bidoof') {
+          loginAsAdmin()
+          onLogin()
+          setUsername('')
+          setPassword('')
+          setError('')
+        } else {
+          setError('Credenciales incorrectas')
+        }
+      }
+    } catch (err) {
+      console.error('Error en login:', err)
+      setError('Error al iniciar sesión. Intenta nuevamente.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -59,10 +94,12 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
             </svg>
           </div>
           <h2 className="text-2xl font-bold mb-1" style={{ color: '#e8eaf6' }}>
-            Admin Login
+            {isTrainerMode ? 'Login Entrenador' : 'Admin Login'}
           </h2>
           <p className="text-sm" style={{ color: '#64748b' }}>
-            Ingresa tus credenciales de entrenador
+            {isTrainerMode 
+              ? 'Ingresa tus credenciales de entrenador' 
+              : 'Ingresa tus credenciales de administrador'}
           </p>
         </div>
 
@@ -111,8 +148,13 @@ export default function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps
           <button
             type="submit"
             className="btn-glow w-full px-6 py-3 rounded-xl text-sm font-bold tracking-wider uppercase mt-2"
+            disabled={isLoading}
+            style={{
+              opacity: isLoading ? 0.6 : 1,
+              cursor: isLoading ? 'not-allowed' : 'pointer'
+            }}
           >
-            Iniciar Sesión
+            {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
         </form>
 

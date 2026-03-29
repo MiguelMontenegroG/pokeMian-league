@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 import type { Team, Pokemon } from '@/app/page'
 
 interface PokemonEntry {
@@ -1186,6 +1187,7 @@ function NumberStepper({
 }
 
 export default function TeamForm({ onSave, onUpdate, onDelete, existingTeams, trainers }: Props) {
+  const { trainer, isAdminLoggedIn } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [typeFilter, setTypeFilter] = useState<string>('all')
@@ -1194,7 +1196,7 @@ export default function TeamForm({ onSave, onUpdate, onDelete, existingTeams, tr
 
   const [formData, setFormData] = useState<FormData>({
     teamName: '',
-    trainerName: '',
+    trainerName: isAdminLoggedIn ? '' : (trainer?.name || ''), // Admin puede seleccionar, entrenador tiene su nombre
     wins: 0,
     gamesPlayed: 0,
     pokemons: [],
@@ -1206,7 +1208,13 @@ export default function TeamForm({ onSave, onUpdate, onDelete, existingTeams, tr
   }
 
   const resetForm = () => {
-    setFormData({ teamName: '', trainerName: '', wins: 0, gamesPlayed: 0, pokemons: [] })
+    setFormData({ 
+      teamName: '', 
+      trainerName: isAdminLoggedIn ? '' : (trainer?.name || ''), // Mantener lógica según tipo de usuario
+      wins: 0, 
+      gamesPlayed: 0, 
+      pokemons: [] 
+    })
     setIsEditing(false)
     setEditingId(null)
     setTypeFilter('all')
@@ -1343,7 +1351,20 @@ export default function TeamForm({ onSave, onUpdate, onDelete, existingTeams, tr
                 </div>
                 <div>
                   <FieldLabel>Entrenador</FieldLabel>
-                  {trainers && trainers.length > 0 ? (
+                  {trainer && !isAdminLoggedIn ? (
+                    // Si el entrenador está logueado (no admin), mostrar campo bloqueado
+                    <div
+                      className="w-full px-4 py-3 rounded-xl text-base font-medium"
+                      style={{
+                        background: 'rgba(16, 185, 129, 0.1)',
+                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                        color: '#10b981'
+                      }}
+                    >
+                       {trainer.name} (Tu cuenta)
+                    </div>
+                  ) : trainers && trainers.length > 0 ? (
+                    // Si es admin o no hay entrenador logueado, mostrar selector normal
                     <select
                       value={formData.trainerName}
                       onChange={e => setFormData(prev => ({ ...prev, trainerName: e.target.value }))}
@@ -1352,9 +1373,9 @@ export default function TeamForm({ onSave, onUpdate, onDelete, existingTeams, tr
                       style={{ color: '#e8eaf6' }}
                     >
                       <option value="" disabled>Selecciona un entrenador</option>
-                      {trainers.map(trainer => (
-                        <option key={trainer.name} value={trainer.name} style={{ color: '#000' }}>
-                          {trainer.name}
+                      {trainers.map(t => (
+                        <option key={t.name} value={t.name} style={{ color: '#000' }}>
+                          {t.name}
                         </option>
                       ))}
                     </select>
@@ -1655,52 +1676,61 @@ export default function TeamForm({ onSave, onUpdate, onDelete, existingTeams, tr
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
-            Editar equipo existente
+            {trainer && !isAdminLoggedIn ? 'Editar mis equipos' : 'Editar equipo existente'}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {existingTeams.map(team => (
-              <button
-                key={team.id}
-                type="button"
-                onClick={() => handleEdit(team)}
-                className="glass-card p-4 text-left transition-all duration-200"
-                style={{ cursor: 'pointer' }}
-                onMouseEnter={e => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.borderColor = 'rgba(245,158,11,0.4)'
-                  el.style.boxShadow = '0 0 20px rgba(245,158,11,0.1)'
-                }}
-                onMouseLeave={e => {
-                  const el = e.currentTarget as HTMLElement
-                  el.style.borderColor = 'rgba(79,195,247,0.12)'
-                  el.style.boxShadow = ''
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  {team.pokemons[0] && (
-                    <img
-                      src={team.pokemons[0].image}
-                      alt={team.pokemons[0].name}
-                      className="w-10 h-10 flex-shrink-0"
-                      style={{ imageRendering: 'pixelated' }}
-                      crossOrigin="anonymous"
-                    />
-                  )}
-                  <div className="min-w-0">
-                    <p className="font-bold text-sm truncate" style={{ color: '#e8eaf6' }}>
-                      {team.teamName}
-                    </p>
-                    <p className="text-xs" style={{ color: '#64748b' }}>
-                      {team.trainerName} · {team.wins}W-{(team.gamesPlayed || 0) - team.wins}L ({team.gamesPlayed || 0}G)
-                    </p>
+            {existingTeams
+              .filter(team => {
+                // Si es entrenador logueado (no admin), solo muestra sus equipos
+                if (trainer && !isAdminLoggedIn) {
+                  return team.trainerName === trainer.name
+                }
+                // Si es admin, muestra todos
+                return true
+              })
+              .map(team => (
+                <button
+                  key={team.id}
+                  type="button"
+                  onClick={() => handleEdit(team)}
+                  className="glass-card p-4 text-left transition-all duration-200"
+                  style={{ cursor: 'pointer' }}
+                  onMouseEnter={e => {
+                    const el = e.currentTarget as HTMLElement
+                    el.style.borderColor = 'rgba(245,158,11,0.4)'
+                    el.style.boxShadow = '0 0 20px rgba(245,158,11,0.1)'
+                  }}
+                  onMouseLeave={e => {
+                    const el = e.currentTarget as HTMLElement
+                    el.style.borderColor = 'rgba(79,195,247,0.12)'
+                    el.style.boxShadow = ''
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    {team.pokemons[0] && (
+                      <img
+                        src={team.pokemons[0].image}
+                        alt={team.pokemons[0].name}
+                        className="w-10 h-10 flex-shrink-0"
+                        style={{ imageRendering: 'pixelated' }}
+                        crossOrigin="anonymous"
+                      />
+                    )}
+                    <div className="min-w-0">
+                      <p className="font-bold text-sm truncate" style={{ color: '#e8eaf6' }}>
+                        {team.teamName}
+                      </p>
+                      <p className="text-xs" style={{ color: '#64748b' }}>
+                        {team.trainerName} · {team.wins}W-{(team.gamesPlayed || 0) - team.wins}L ({team.gamesPlayed || 0}G)
+                      </p>
+                    </div>
+                    <svg className="w-4 h-4 ml-auto flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
                   </div>
-                  <svg className="w-4 h-4 ml-auto flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                  </svg>
-                </div>
-              </button>
-            ))}
+                </button>
+              ))}
           </div>
         </div>
       )}

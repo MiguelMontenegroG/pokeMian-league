@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import type { Team, Pokemon } from '@/app/page'
+import { TrainerAuth } from '@/lib/auth'
 
 interface Props {
   teams: Team[]
   onEdit?: () => void
+  trainer?: TrainerAuth | null // Entrenador logueado
 }
 
 const TYPE_GRADIENT: Record<string, string> = {
@@ -222,8 +224,11 @@ function TeamCard({ team, index }: { team: Team; index: number }) {
   )
 }
 
-export default function TeamsView({ teams, onEdit }: Props) {
-  if (teams.length === 0) {
+export default function TeamsView({ teams, onEdit, trainer }: Props) {
+  // Mostrar todos los equipos (los entrenadores pueden ver los demás equipos)
+  const filteredTeams = teams
+    
+  if (filteredTeams.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-6 animate-fade-scale">
         <div
@@ -235,8 +240,12 @@ export default function TeamsView({ teams, onEdit }: Props) {
           </svg>
         </div>
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2" style={{ color: '#e8eaf6' }}>Sin equipos registrados</h2>
-          <p className="mb-6" style={{ color: '#64748b' }}>Los equipos aparecerán aquí cuando sean creados</p>
+          <h2 className="text-2xl font-bold mb-2" style={{ color: '#e8eaf6' }}>
+            Sin equipos registrados
+          </h2>
+          <p className="mb-6" style={{ color: '#64748b' }}>
+            Los equipos aparecerán aquí cuando sean creados
+          </p>
           {onEdit && (
             <button onClick={onEdit} className="btn-glow px-6 py-3 rounded-xl text-sm font-bold tracking-wider uppercase">
               Crear equipo
@@ -253,7 +262,7 @@ export default function TeamsView({ teams, onEdit }: Props) {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
           <p className="text-xs tracking-widest uppercase mb-1 font-semibold" style={{ color: '#4fc3f7', letterSpacing: '0.2em' }}>
-            {teams.length} equipo{teams.length !== 1 ? 's' : ''} registrado{teams.length !== 1 ? 's' : ''}
+            {filteredTeams.length} equipo{filteredTeams.length !== 1 ? 's' : ''} registrado{filteredTeams.length !== 1 ? 's' : ''}
           </p>
           <h2 className="text-3xl md:text-4xl font-bold tracking-wide" style={{ color: '#e8eaf6' }}>
             Equipos de{' '}
@@ -261,7 +270,7 @@ export default function TeamsView({ teams, onEdit }: Props) {
           </h2>
         </div>
         <div>
-          {onEdit && (
+          {trainer && onEdit && (
             <button
               onClick={onEdit}
               className="btn-glow px-5 py-2.5 rounded-xl text-sm font-bold tracking-wider uppercase flex items-center gap-2 self-start sm:self-auto"
@@ -276,7 +285,7 @@ export default function TeamsView({ teams, onEdit }: Props) {
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {teams.map((team, i) => (
+        {filteredTeams.map((team, i) => (
           <TeamCard key={team.id} team={team} index={i} />
         ))}
       </div>

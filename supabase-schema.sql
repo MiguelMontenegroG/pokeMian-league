@@ -13,11 +13,12 @@ CREATE TABLE IF NOT EXISTS teams (
 -- Create trainers table
 CREATE TABLE IF NOT EXISTS trainers (
   id BIGSERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
+  name TEXT NOT NULL UNIQUE,
   favorite_pokemon TEXT NOT NULL,
   favorite_pokemon_image TEXT,
   description TEXT,
   badges JSONB NOT NULL DEFAULT '[]',
+  password TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
@@ -25,14 +26,20 @@ CREATE TABLE IF NOT EXISTS trainers (
 ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
 ALTER TABLE trainers ENABLE ROW LEVEL SECURITY;
 
--- Create policies to allow all operations (for personal use)
--- In production, you would restrict these based on user authentication
-CREATE POLICY "Allow all operations on teams" ON teams
-  FOR ALL
-  USING (true)
-  WITH CHECK (true);
+-- Policies for trainers table (public read, only admins can update)
+CREATE POLICY "Allow public read access on trainers" ON trainers
+  FOR SELECT
+  USING (true);
 
-CREATE POLICY "Allow all operations on trainers" ON trainers
+-- Policies for teams table
+-- Public can read all teams
+CREATE POLICY "Allow public read access on teams" ON teams
+  FOR SELECT
+  USING (true);
+
+-- Authenticated trainers can only insert/update/delete their own teams
+-- This is enforced at application level with trainer_id check
+CREATE POLICY "Allow trainers to manage their own teams" ON teams
   FOR ALL
   USING (true)
   WITH CHECK (true);

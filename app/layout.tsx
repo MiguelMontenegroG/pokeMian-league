@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Rajdhani, Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { AuthProvider } from '@/contexts/AuthContext'
 import './globals.css'
 
 const rajdhani = Rajdhani({
@@ -28,8 +29,10 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${rajdhani.variable} ${inter.variable} font-sans antialiased`}>
-        {children}
-        <Analytics />
+        <AuthProvider>
+          {children}
+          <Analytics />
+        </AuthProvider>
       </body>
     </html>
   )
