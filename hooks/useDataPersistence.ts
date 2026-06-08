@@ -15,6 +15,7 @@ interface Team {
     types: string[]
     image: string
   }>
+  bracketPosition?: number | null
 }
 
 interface Trainer {
@@ -25,9 +26,10 @@ interface Trainer {
   description: string
   badges: Array<{
     name: string
-    icon: string
+    image: string
     obtained: boolean
   }>
+  avatarSprite?: number | null
 }
 
 export function useTeams() {
@@ -81,7 +83,8 @@ export function useTeams() {
           wins: team.wins,
           gamesPlayed: team.games_played,
           points: team.points,
-          pokemons: typeof team.pokemons === 'string' ? JSON.parse(team.pokemons) : team.pokemons
+          pokemons: typeof team.pokemons === 'string' ? JSON.parse(team.pokemons) : team.pokemons,
+          bracketPosition: team.bracket_position
         }))
         setTeams(parsed)
       }
@@ -104,7 +107,8 @@ export function useTeams() {
         wins: team.wins,
         games_played: team.gamesPlayed,
         points: calculatedPoints,
-        pokemons: JSON.stringify(team.pokemons)
+        pokemons: JSON.stringify(team.pokemons),
+        bracket_position: team.bracketPosition ?? null
       }
       
       console.log('🔵 Is Supabase configured?', isSupabaseConfigured)
@@ -142,7 +146,8 @@ export function useTeams() {
           points: data[0].points,
           pokemons: typeof data[0].pokemons === 'string' 
             ? JSON.parse(data[0].pokemons) 
-            : data[0].pokemons
+            : data[0].pokemons,
+          bracketPosition: data[0].bracket_position
         }
         setTeams(prev => [...prev, parsedTeam])
         return parsedTeam
@@ -168,8 +173,9 @@ export function useTeams() {
         trainer_name: updated.trainerName,
         wins: updated.wins,
         games_played: updated.gamesPlayed,
-        points: calculatedPoints,
-        pokemons: JSON.stringify(updated.pokemons)
+        points: calculatedPoints, // Siempre recalcular puntos basados en victorias
+        pokemons: JSON.stringify(updated.pokemons),
+        bracket_position: updated.bracketPosition ?? null
       }
       
       console.log('🟡 Is Supabase configured?', isSupabaseConfigured)
@@ -207,7 +213,8 @@ export function useTeams() {
           points: data[0].points,
           pokemons: typeof data[0].pokemons === 'string' 
             ? JSON.parse(data[0].pokemons) 
-            : data[0].pokemons
+            : data[0].pokemons,
+          bracketPosition: data[0].bracket_position
         }
         // Update local state with the returned data
         setTeams(prev => prev.map(t => t.id === updated.id ? parsedTeam : t))
@@ -317,7 +324,8 @@ export function useTrainers() {
           favoritePokemon: trainer.favorite_pokemon,
           favoritePokemonImage: trainer.favorite_pokemon_image,
           description: trainer.description,
-          badges: typeof trainer.badges === 'string' ? JSON.parse(trainer.badges) : trainer.badges
+          badges: typeof trainer.badges === 'string' ? JSON.parse(trainer.badges) : trainer.badges,
+          avatarSprite: trainer.avatar_sprite ?? null
         }))
         setTrainers(parsed)
       }
@@ -337,12 +345,13 @@ export function useTrainers() {
         favorite_pokemon: trainer.favoritePokemon,
         favorite_pokemon_image: trainer.favoritePokemonImage || null,
         description: trainer.description || null,
-        badges: JSON.stringify(trainer.badges)
+        badges: JSON.stringify(trainer.badges),
+        avatar_sprite: trainer.avatarSprite ?? null
       }
       
       if (!isSupabaseConfigured) {
         // Fallback to localStorage
-        const updatedTrainers = [...trainers, { ...newTrainer, id: Date.now() }]
+        const updatedTrainers = [...trainers, { ...trainer, avatarSprite: trainer.avatarSprite ?? null, id: Date.now() }]
         setTrainers(updatedTrainers)
         localStorage.setItem('pokeMianTrainers', JSON.stringify(updatedTrainers))
         return updatedTrainers[updatedTrainers.length - 1]
@@ -357,12 +366,15 @@ export function useTrainers() {
       
       if (data && data.length > 0) {
         const parsedTrainer = {
-          ...data[0],
+          id: data[0].id,
+          name: data[0].name,
           favoritePokemon: data[0].favorite_pokemon,
           favoritePokemonImage: data[0].favorite_pokemon_image,
+          description: data[0].description,
           badges: typeof data[0].badges === 'string'
             ? JSON.parse(data[0].badges)
-            : data[0].badges
+            : data[0].badges,
+          avatarSprite: data[0].avatar_sprite ?? null
         }
         setTrainers(prev => [...prev, parsedTrainer])
         return parsedTrainer
@@ -387,7 +399,8 @@ export function useTrainers() {
         favorite_pokemon: updated.favoritePokemon,
         favorite_pokemon_image: updated.favoritePokemonImage || null,
         description: updated.description || null,
-        badges: JSON.stringify(updated.badges)
+        badges: JSON.stringify(updated.badges),
+        avatar_sprite: updated.avatarSprite ?? null
       }
       
       console.log('🟡 Is Supabase configured?', isSupabaseConfigured)
@@ -422,6 +435,7 @@ export function useTrainers() {
           favoritePokemon: data[0].favorite_pokemon,
           favoritePokemonImage: data[0].favorite_pokemon_image,
           description: data[0].description,
+          avatarSprite: data[0].avatar_sprite ?? null,
           badges: typeof data[0].badges === 'string'
             ? JSON.parse(data[0].badges)
             : data[0].badges
@@ -481,5 +495,202 @@ export function useTrainers() {
     updateTrainer,
     deleteTrainer,
     refreshTrainers: loadTrainers
+  }
+}
+
+// ==========================================
+// TrainerTeams (Equipos personales de cada entrenador)
+// ==========================================
+
+export interface TrainerTeam {
+  id: number
+  trainerId: number
+  teamName: string
+  format: 'league' | 'practice'
+  isOfficial: boolean
+  pokemons: Array<{
+    name: string
+    types: string[]
+    image: string
+  }>
+}
+
+export function useTrainerTeams() {
+  const [trainerTeams, setTrainerTeams] = useState<TrainerTeam[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isSupabaseConfigured, setIsSupabaseConfigured] = useState(false)
+
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    setIsSupabaseConfigured(!!url && !!key && url !== 'tu_supabase_url_aqui')
+  }, [])
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) {
+      try {
+        const saved = localStorage.getItem('pokeMianTrainerTeams')
+        if (saved) {
+          const loaded = JSON.parse(saved)
+          setTrainerTeams(loaded)
+        }
+      } catch (err) {
+        console.error('Error loading trainer teams from localStorage:', err)
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
+    loadTrainerTeams()
+  }, [isSupabaseConfigured])
+
+  const loadTrainerTeams = async () => {
+    try {
+      if (!supabase) throw new Error('Supabase not configured')
+      setLoading(true)
+      const { data, error } = await supabase.from('trainer_teams').select('*')
+
+      if (error) throw error
+
+      if (data) {
+        const parsed = data.map((tt: any) => ({
+          id: tt.id,
+          trainerId: tt.trainer_id,
+          teamName: tt.team_name,
+          format: tt.format,
+          isOfficial: tt.is_official,
+          pokemons: typeof tt.pokemons === 'string' ? JSON.parse(tt.pokemons) : tt.pokemons,
+        }))
+        setTrainerTeams(parsed)
+      }
+    } catch (err: any) {
+      console.error('Error loading trainer teams:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const addTrainerTeam = async (team: Omit<TrainerTeam, 'id'>) => {
+    try {
+      const newTeam = {
+        trainer_id: team.trainerId,
+        team_name: team.teamName,
+        format: team.format,
+        is_official: team.isOfficial,
+        pokemons: JSON.stringify(team.pokemons),
+      }
+
+      if (!isSupabaseConfigured) {
+        const updatedTeams = [...trainerTeams, { ...team, id: Date.now() }]
+        setTrainerTeams(updatedTeams)
+        localStorage.setItem('pokeMianTrainerTeams', JSON.stringify(updatedTeams))
+        return updatedTeams[updatedTeams.length - 1]
+      }
+
+      const { data, error } = await supabase
+        .from('trainer_teams')
+        .insert([newTeam])
+        .select()
+
+      if (error) throw error
+
+      if (data && data.length > 0) {
+        const parsed = {
+          id: data[0].id,
+          trainerId: data[0].trainer_id,
+          teamName: data[0].team_name,
+          format: data[0].format,
+          isOfficial: data[0].is_official,
+          pokemons: typeof data[0].pokemons === 'string' ? JSON.parse(data[0].pokemons) : data[0].pokemons,
+        }
+        setTrainerTeams(prev => [...prev, parsed])
+        return parsed
+      }
+    } catch (err: any) {
+      console.error('Error adding trainer team:', err)
+      throw err
+    }
+  }
+
+  const updateTrainerTeam = async (updated: TrainerTeam) => {
+    try {
+      if (!updated.id) throw new Error('No trainer team ID provided')
+
+      const teamToUpdate = {
+        trainer_id: updated.trainerId,
+        team_name: updated.teamName,
+        format: updated.format,
+        is_official: updated.isOfficial,
+        pokemons: JSON.stringify(updated.pokemons),
+      }
+
+      if (!isSupabaseConfigured) {
+        const updatedTeams = trainerTeams.map(t => (t.id === updated.id ? { ...updated } : t))
+        setTrainerTeams(updatedTeams)
+        localStorage.setItem('pokeMianTrainerTeams', JSON.stringify(updatedTeams))
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('trainer_teams')
+        .update(teamToUpdate)
+        .eq('id', updated.id)
+        .select()
+
+      if (error) throw error
+
+      if (data && data.length > 0) {
+        const parsed = {
+          id: data[0].id,
+          trainerId: data[0].trainer_id,
+          teamName: data[0].team_name,
+          format: data[0].format,
+          isOfficial: data[0].is_official,
+          pokemons: typeof data[0].pokemons === 'string' ? JSON.parse(data[0].pokemons) : data[0].pokemons,
+        }
+        setTrainerTeams(prev => prev.map(t => (t.id === updated.id ? parsed : t)))
+      }
+    } catch (err: any) {
+      console.error('Error updating trainer team:', err)
+      throw err
+    }
+  }
+
+  const deleteTrainerTeam = async (id: number) => {
+    try {
+      if (!isSupabaseConfigured) {
+        const updatedTeams = trainerTeams.filter(t => t.id !== id)
+        setTrainerTeams(updatedTeams)
+        localStorage.setItem('pokeMianTrainerTeams', JSON.stringify(updatedTeams))
+        return
+      }
+
+      const { error } = await supabase
+        .from('trainer_teams')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
+      setTrainerTeams(prev => prev.filter(t => t.id !== id))
+    } catch (err: any) {
+      console.error('Error deleting trainer team:', err)
+      throw err
+    }
+  }
+
+  return {
+    trainerTeams,
+    setTrainerTeams,
+    loading,
+    error,
+    isSupabaseConfigured,
+    addTrainerTeam,
+    updateTrainerTeam,
+    deleteTrainerTeam,
+    refreshTrainerTeams: loadTrainerTeams,
   }
 }

@@ -1,0 +1,134 @@
+name,rarity,sprite
+Pocion,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/potion.png
+Superpocion,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/super-potion.png
+Pocion Maxima,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/max-potion.png
+Agua Fresca,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fresh-water.png
+Acqua,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/soda-pop.png
+Limonada,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lemonade.png
+Leche Mo Mo,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/moomoo-milk.png
+Pokeball,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png
+Antidoto,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/antidote.png
+Antiquemar,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/burn-heal.png
+Antihielo,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ice-heal.png
+Despertar,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/awakening.png
+Antiparalizador,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/paralyze-heal.png
+Restaurador Total,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/full-heal.png
+Revivir,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/revive.png
+Polvo Energia,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/energy-powder.png
+Raiz Energia,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/energy-root.png
+Baya Aranja,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/oran-berry.png
+Baya Meloc,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/pecha-berry.png
+Baya Safre,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rawst-berry.png
+Baya Caquic,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/chesto-berry.png
+Baya Atania,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/cheri-berry.png
+Baya Perasi,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/persim-berry.png
+Baya Oram,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/aspear-berry.png
+Baya Zanama,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/leppa-berry.png
+Baya Atalaya,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lum-berry.png
+Repelente,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/repel.png
+Super Repelente,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/super-repel.png
+Cola Blanca,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fluffy-tail.png
+Cuerda Huida,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/escape-rope.png
+Bicicleta,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/bike.png
+Silbato,comun,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/clear-bell.png
+Superball,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png
+Ultraball,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png
+Repelente Maximo,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/max-repel.png
+Huevo Suerte,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lucky-egg.png
+Campana Concha,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/shell-bell.png
+Piedra Agua,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/water-stone.png
+Piedra Fuego,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fire-stone.png
+Piedra Trueno,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thunder-stone.png
+Piedra Hoja,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/leaf-stone.png
+Piedra Lunar,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/moon-stone.png
+Piedra Solar,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sun-stone.png
+Piedra Hielo,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ice-stone.png
+Piedra Noche,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dusk-stone.png
+Piedra Alba,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dawn-stone.png
+Piedra Oval,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/oval-stone.png
+Piedra Brillo,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/shiny-stone.png
+Piedra Eterna,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ever-stone.png
+Escama Corazon,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/heart-scale.png
+Manzana Dulce,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sweet-apple.png
+Manzana Acida,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tart-apple.png
+Fragmento Estrella,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/star-piece.png
+Caramelo Dinamax,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dynamax-candy.png
+Escama Draga,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dragon-scale.png
+Paquete Eter,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ether.png
+Max Eter,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/max-ether.png
+Elixir,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/elixir.png
+Max Elixir,raro,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/max-elixir.png
+Master Ball,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png
+Caramelo Raro,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rare-candy.png
+Cinta Elegida,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/choice-band.png
+Gafas Elegidas,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/choice-specs.png
+Bufanda Elegida,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/choice-scarf.png
+Casco Dentado,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rocky-helmet.png
+Restos,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/leftovers.png
+Vida Esfera,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/life-orb.png
+Lazo Focus,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/focus-sash.png
+Banda Focus,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/focus-band.png
+Chaleco Asalto,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/assault-vest.png
+Politica Debil,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/weakness-policy.png
+Globo Helio,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/air-balloon.png
+Baya Zidra,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/figy-berry.png
+Baya Wiki,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/wiki-berry.png
+Baya Mago,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/mago-berry.png
+Baya Aguav,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/aguav-berry.png
+Baya Iapapa,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/iapapa-berry.png
+Paquete Habilidad,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ability-capsule.png
+Parche Habilidad,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ability-patch.png
+Cinta Milagro,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lagging-tail.png
+Cuchara Torcida,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/twisted-spoon.png
+Palo Negro,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/black-belt.png
+Piedra Dura,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/hard-stone.png
+Musgo Velo,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/never-melt-ice.png
+Cinta Mistica,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/clear-bell.png
+Polvo Metalico,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/metal-powder.png
+Hueso Hueco,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thick-club.png
+Mecha de Luz,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/light-ball.png
+Escama Metal,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/metal-coat.png
+Capa Naranja,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/king-s-rock.png
+Colmillo Aguijon,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poison-barb.png
+Ceniza Mistica,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sacred-ash.png
+Cinta Suave,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/soothe-bell.png
+Cuenta Suerte,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/amulet-coin.png
+Parche Muscular,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/muscle-band.png
+Parche Sabio,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/wise-glasses.png
+Garra Experta,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/razor-claw.png
+Colmillo Aguilar,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/razor-fang.png
+Baya Liechi,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/liechi-berry.png
+Baya Ganlon,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ganlon-berry.png
+Baya Salac,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/salac-berry.png
+Baya Petaya,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/petaya-berry.png
+Baya Apicot,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/apicot-berry.png
+Baya Lansat,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lansat-berry.png
+Baya Chiri,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/cheri-berry.png
+Baya Nuez,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/kebia-berry.png
+Baya Aturan,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/shuca-berry.png
+Baya Kouba,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/coba-berry.png
+Baya Sapih,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/passho-berry.png
+Baya Tamate,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tamat-berry.png
+Baya Pinia,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/pinap-berry.png
+Cinta Destino,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/destiny-knot.png
+Incienso Suave,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sea-incense.png
+Incienso Roca,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rock-incense.png
+Incienso Planta,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rose-incense.png
+Incienso Oleaje,epico,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/wave-incense.png
+Caramelo Maestro,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rare-candy.png
+Corona de Campeon,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/clear-bell.png
+Hoja Plateada,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/silver-leaf.png
+Hoja Dorada,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/gold-leaf.png
+Pluma de Ho-Oh,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rainbow-wing.png
+Pluma de Lugia,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/silver-wing.png
+Fragmento Vida,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/large-leaf.png
+Llamas Eternas,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fire-stone.png
+Espina Lunar,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/moon-stone.png
+Colmillo del Trueno,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thunder-stone.png
+Esencia Cristal,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/shiny-stone.png
+Garra de Dragon,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dragon-scale.png
+Gema Oceano,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/water-stone.png
+Alma del Bosque,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/leaf-stone.png
+Garra Oscura,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dusk-stone.png
+Alba Radiante,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dawn-stone.png
+Corona Solar,legendario,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sun-stone.png

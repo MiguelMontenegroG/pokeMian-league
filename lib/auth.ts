@@ -6,6 +6,7 @@ export interface TrainerAuth {
   favoritePokemon: string
   favoritePokemonImage?: string
   description: string
+  avatarSprite?: number | null
 }
 
 /**
@@ -22,7 +23,7 @@ export async function loginTrainer(name: string, password: string): Promise<Trai
     // Buscar entrenador por nombre y contraseña
     const { data, error } = await supabase
       .from('trainers')
-      .select('id, name, favorite_pokemon, favorite_pokemon_image, description')
+      .select('id, name, favorite_pokemon, favorite_pokemon_image, description, avatar_sprite')
       .eq('name', name)
       .eq('password', password)
       .maybeSingle() // Usar maybeSingle en lugar de single para evitar errores con 0 resultados
@@ -43,7 +44,8 @@ export async function loginTrainer(name: string, password: string): Promise<Trai
       name: data.name,
       favoritePokemon: data.favorite_pokemon,
       favoritePokemonImage: data.favorite_pokemon_image,
-      description: data.description
+      description: data.description,
+      avatarSprite: data.avatar_sprite ?? null
     }
 
     // Guardar sesión en localStorage

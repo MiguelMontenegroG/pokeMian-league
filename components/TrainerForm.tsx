@@ -11,14 +11,14 @@ interface PokemonEntry {
 
 // TrainerForm.tsx - reemplaza JOHTO_BADGES_DATA
 const JOHTO_BADGES_DATA = [
-  { name: 'Zephyr',  image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/9.png' },
-  { name: 'Hive',    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/10.png' },
-  { name: 'Plain',   image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/11.png' },
-  { name: 'Fog',     image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/12.png' },
-  { name: 'Storm',   image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/13.png' },
-  { name: 'Mineral', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/14.png' },
-  { name: 'Glacier', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/15.png' },
-  { name: 'Rising',  image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/16.png' },
+  { name: 'Kaswu',  image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/9.png' },
+  { name: 'Panrata',    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/10.png' },
+  { name: 'Dashie',   image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/11.png' },
+  { name: 'Skaiso',     image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/12.png' },
+  { name: 'PokeMian',   image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/13.png' },
+  { name: 'Wadekya', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/14.png' },
+  { name: 'Oha', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/15.png' },
+  { name: 'Corkky',  image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/16.png' },
 ]
 
 // Lista simplificada de Pokémon (puedes expandirla)
@@ -1406,8 +1406,11 @@ export default function TrainerForm({ onSave, onUpdate, onDelete, existingTraine
                     ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05))'
                     : 'rgba(255,255,255,0.02)',
                   border: badge.obtained
-                    ? '1px solid rgba(245, 158, 11, 0.4)'
-                    : '1px dashed rgba(79, 195, 247, 0.2)',
+                    ? '2px solid rgba(245, 158, 11, 0.5)'
+                    : '2px dashed rgba(79, 195, 247, 0.2)',
+                  boxShadow: badge.obtained
+                    ? '0 0 20px rgba(245, 158, 11, 0.2)'
+                    : 'none',
                   transform: badge.obtained ? 'scale(1.05)' : 'scale(1)',
                 }}
                 onMouseEnter={e => {

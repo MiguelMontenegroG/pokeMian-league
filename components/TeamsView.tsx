@@ -8,6 +8,7 @@ interface Props {
   teams: Team[]
   onEdit?: () => void
   trainer?: TrainerAuth | null // Entrenador logueado
+  onNavigateToMyTeams?: () => void // Navegar a "Mis Equipos" para crear equipos
 }
 
 const TYPE_GRADIENT: Record<string, string> = {
@@ -88,8 +89,8 @@ function PokemonSlot({ pokemon, index }: { pokemon?: Pokemon; index: number }) {
             className="w-full h-full object-contain"
             style={{
               imageRendering: 'pixelated',
-              maxWidth: 56,
-              maxHeight: 56,
+              maxWidth: 80,
+                              maxHeight: 80,
               filter: hovered
                 ? `drop-shadow(0 0 12px ${TYPE_GLOW[firstType] || TYPE_GLOW.default})`
                 : `drop-shadow(0 0 6px ${TYPE_GLOW[firstType] || TYPE_GLOW.default})`,
@@ -115,7 +116,7 @@ function PokemonSlot({ pokemon, index }: { pokemon?: Pokemon; index: number }) {
           )}
         </>
       ) : (
-        <span style={{ fontSize: '0.6rem', color: '#2d3748', textAlign: 'center' }}>Vacío</span>
+        <span style={{ fontSize: '0.6rem', color: '#2d3748', textAlign: 'center' }}>VacÃ­o</span>
       )}
     </div>
   )
@@ -162,7 +163,7 @@ function TeamCard({ team, index }: { team: Team; index: number }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs" style={{ color: '#475569' }}>
-                {team.pokemons.length}/10 Pokémon
+                {team.pokemons.length}/10 PokÃ©mon
               </span>
             </div>
             <h3
@@ -211,7 +212,7 @@ function TeamCard({ team, index }: { team: Team; index: number }) {
           className="grid gap-2"
           style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}
           role="list"
-          aria-label={`Pokémon de ${team.teamName}`}
+          aria-label={`PokÃ©mon de ${team.teamName}`}
         >
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} role="listitem">
@@ -224,8 +225,8 @@ function TeamCard({ team, index }: { team: Team; index: number }) {
   )
 }
 
-export default function TeamsView({ teams, onEdit, trainer }: Props) {
-  // Mostrar todos los equipos (los entrenadores pueden ver los demás equipos)
+export default function TeamsView({ teams, onEdit, trainer, onNavigateToMyTeams }: Props) {
+  // Mostrar todos los equipos (los entrenadores pueden ver los demÃ¡s equipos)
   const filteredTeams = teams
     
   if (filteredTeams.length === 0) {
@@ -244,10 +245,17 @@ export default function TeamsView({ teams, onEdit, trainer }: Props) {
             Sin equipos registrados
           </h2>
           <p className="mb-6" style={{ color: '#64748b' }}>
-            Los equipos aparecerán aquí cuando sean creados
+            Los equipos aparecerÃ¡n aquÃ­ cuando sean creados
           </p>
-          {onEdit && (
-            <button onClick={onEdit} className="btn-glow px-6 py-3 rounded-xl text-sm font-bold tracking-wider uppercase">
+          {trainer && onNavigateToMyTeams ? (
+            <button onClick={onNavigateToMyTeams} className="btn-glow px-6 py-3 rounded-xl text-sm font-bold tracking-wider uppercase">
+              Crear equipo
+            </button>
+          ) : (
+            <button
+              onClick={() => alert('Debes iniciar sesion como entrenador para crear un equipo.')}
+              className="btn-glow px-6 py-3 rounded-xl text-sm font-bold tracking-wider uppercase"
+            >
               Crear equipo
             </button>
           )}
@@ -265,21 +273,32 @@ export default function TeamsView({ teams, onEdit, trainer }: Props) {
             {filteredTeams.length} equipo{filteredTeams.length !== 1 ? 's' : ''} registrado{filteredTeams.length !== 1 ? 's' : ''}
           </p>
           <h2 className="text-3xl md:text-4xl font-bold tracking-wide" style={{ color: '#e8eaf6' }}>
-            Equipos de{' '}
-            <span className="glow-text" style={{ color: '#4fc3f7' }}>Liga</span>
+            Equipos{' '}
+            <span className="glow-text" style={{ color: '#4fc3f7' }}>Oficiales</span>
           </h2>
         </div>
         <div>
-          {trainer && onEdit && (
+          {trainer && onNavigateToMyTeams ? (
             <button
-              onClick={onEdit}
+              onClick={onNavigateToMyTeams}
               className="btn-glow px-5 py-2.5 rounded-xl text-sm font-bold tracking-wider uppercase flex items-center gap-2 self-start sm:self-auto"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              Nuevo equipo
+              Crear equipo
+            </button>
+          ) : (
+            <button
+              onClick={() => alert('Debes iniciar sesion como entrenador para crear un equipo.')}
+              className="btn-glow px-5 py-2.5 rounded-xl text-sm font-bold tracking-wider uppercase flex items-center gap-2 self-start sm:self-auto"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Crear equipo
             </button>
           )}
         </div>
@@ -292,8 +311,11 @@ export default function TeamsView({ teams, onEdit, trainer }: Props) {
 
       {/* Hover hint */}
       <p className="text-center mt-6 text-xs" style={{ color: '#334155' }}>
-        Pasa el cursor sobre un Pokémon para ver su nombre
+        Pasa el cursor sobre un PokÃ©mon para ver su nombre
       </p>
     </div>
   )
 }
+
+
+

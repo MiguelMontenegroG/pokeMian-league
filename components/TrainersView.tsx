@@ -15,6 +15,14 @@ export interface Trainer {
   favoritePokemonImage?: string
   description: string
   badges: Badge[]
+  avatarSprite?: number | null
+}
+
+// Helper para obtener URL de avatar
+function getAvatarUrl(spriteId: number | null | undefined): string | null {
+  if (!spriteId) return null
+  if (spriteId < 1 || spriteId > 93) return null
+  return `/sprites_profile/${String(spriteId).padStart(3, '0')}.png`
 }
 
 interface Props {
@@ -23,14 +31,14 @@ interface Props {
 }
 
 const JOHTO_BADGES_DATA = [
-  { name: 'Zephyr',  image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/9.png' },
-  { name: 'Hive',    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/10.png' },
-  { name: 'Plain',   image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/11.png' },
-  { name: 'Fog',     image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/12.png' },
-  { name: 'Storm',   image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/13.png' },
-  { name: 'Mineral', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/14.png' },
-  { name: 'Glacier', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/15.png' },
-  { name: 'Rising',  image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/16.png' },
+  { name: 'Kaswu',  image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/9.png' },
+  { name: 'Panrata',    image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/10.png' },
+  { name: 'Dashie',   image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/11.png' },
+  { name: 'Skaiso',     image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/12.png' },
+  { name: 'PokeMian',   image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/13.png' },
+  { name: 'Wadekya', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/14.png' },
+  { name: 'Oha', image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/15.png' },
+  { name: 'Corkky',  image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/16.png' },
 ]
 
 function BadgeDisplay({ badge }: { badge: Badge }) {
@@ -41,9 +49,7 @@ function BadgeDisplay({ badge }: { badge: Badge }) {
         background: badge.obtained
           ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05))'
           : 'rgba(255,255,255,0.02)',
-        border: badge.obtained
-          ? '1px solid rgba(245, 158, 11, 0.4)'
-          : '1px dashed rgba(79, 195, 247, 0.1)',
+        border: 'none',
         transform: badge.obtained ? 'scale(1.05)' : 'scale(1)',
       }}
     >
@@ -71,6 +77,7 @@ function BadgeDisplay({ badge }: { badge: Badge }) {
 function TrainerCard({ trainer, index, onClick }: { trainer: Trainer; index: number; onClick: () => void }) {
   const [visible, setVisible] = useState(false)
   const obtainedBadges = trainer.badges.filter(b => b.obtained).length
+  const avatarUrl = getAvatarUrl(trainer.avatarSprite)
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), index * 100)
@@ -79,14 +86,15 @@ function TrainerCard({ trainer, index, onClick }: { trainer: Trainer; index: num
 
   return (
     <div
-      className="glass-card cursor-pointer"
+      className="glass-card cursor-pointer flex flex-col"
       onClick={onClick}
       style={{
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateY(0)' : 'translateY(20px)',
         transition: 'opacity 0.5s ease, transform 0.5s ease',
         background: 'rgba(13, 18, 32, 0.8)',
-        borderColor: `rgba(79,195,247,0.1)`,
+        borderColor: 'rgba(79,195,247,0.1)',
+        minHeight: '250px',
       }}
       onMouseEnter={e => {
         const el = e.currentTarget as HTMLElement
@@ -102,10 +110,24 @@ function TrainerCard({ trainer, index, onClick }: { trainer: Trainer; index: num
       }}
     >
       {/* Card header */}
-      <div className="p-5 pb-4">
+      <div className="p-5 pb-2 flex-1">
         <div className="flex items-start gap-4">
-          {/* Favorite Pokemon */}
-          {trainer.favoritePokemonImage && (
+          {/* Avatar o Favorite Pokemon */}
+          {avatarUrl ? (
+            <div
+              className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, rgba(79, 195, 247, 0.15), rgba(79, 195, 247, 0.05))',
+                border: '2px solid rgba(79, 195, 247, 0.3)',
+              }}
+            >
+              <img
+                src={avatarUrl}
+                alt={trainer.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
+          ) : trainer.favoritePokemonImage && (
             <div
               className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0"
               style={{
@@ -131,7 +153,7 @@ function TrainerCard({ trainer, index, onClick }: { trainer: Trainer; index: num
               {trainer.name}
             </h3>
             <p className="text-sm mt-1" style={{ color: '#64748b' }}>
-              Pokémon Favorito: <span style={{ color: '#4fc3f7', fontWeight: 600 }}>{trainer.favoritePokemon}</span>
+              Pokemon Favorito: <span style={{ color: '#4fc3f7', fontWeight: 600 }}>{trainer.favoritePokemon}</span>
             </p>
           </div>
 
@@ -160,44 +182,64 @@ function TrainerCard({ trainer, index, onClick }: { trainer: Trainer; index: num
           </div>
         </div>
 
-        {/* Description preview */}
-        {trainer.description && (
-          <p
-            className="text-sm mt-3 line-clamp-2"
-            style={{ color: '#94a3b8' }}
-          >
-            {trainer.description}
-          </p>
-        )}
+        {/* Description - altura fija con o sin descripcion */}
+        <div
+          className="mt-4 rounded-lg flex items-center"
+          style={{
+            background: trainer.description ? 'rgba(79, 195, 247, 0.04)' : 'rgba(79, 195, 247, 0.02)',
+            border: trainer.description
+              ? '1px solid rgba(79, 195, 247, 0.08)'
+              : '1px dashed rgba(79, 195, 247, 0.06)',
+            minHeight: '72px',
+            maxHeight: '72px',
+          }}
+        >
+          {trainer.description ? (
+            <div className="p-3 w-full">
+              <p
+                className="text-sm leading-relaxed line-clamp-3"
+                style={{ color: '#94a3b8' }}
+              >
+                {trainer.description}
+              </p>
+            </div>
+          ) : (
+            <div className="w-full text-center">
+              <span className="text-xs italic" style={{ color: '#475569' }}>
+                Sin descripcion
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Badges preview */}
+      {/* Badges preview - siempre al fondo */}
       <div
-        className="px-5 pb-4"
+        className="px-5 py-3 pt-3"
         style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
       >
-        <div className="flex gap-1.5 overflow-hidden">
+        <div className="flex gap-2 overflow-hidden justify-center">
           {trainer.badges.slice(0, 8).map((badge, idx) => (
             <div
               key={idx}
-              className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0"
+              className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200"
               style={{
                 background: badge.obtained
                   ? 'rgba(245, 158, 11, 0.2)'
                   : 'rgba(255,255,255,0.03)',
-                border: badge.obtained
-                  ? '1px solid rgba(245, 158, 11, 0.3)'
-                  : '1px solid rgba(79,195,247,0.1)',
+                border: 'none',
+                transform: badge.obtained ? 'scale(1.05)' : 'scale(1)',
               }}
+              title={badge.name}
             >
               <img
-  src={badge.image}
-  alt={badge.name}
-  className="w-4 h-4 object-contain"
-  style={{
-    filter: badge.obtained ? 'none' : 'grayscale(100%) opacity(0.3)',
-  }}
-/>
+                src={badge.image}
+                alt={badge.name}
+                className="w-4 h-4 object-contain"
+                style={{
+                  filter: badge.obtained ? 'none' : 'grayscale(100%) opacity(0.3)',
+                }}
+              />
             </div>
           ))}
         </div>

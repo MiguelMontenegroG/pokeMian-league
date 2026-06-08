@@ -3,12 +3,24 @@
 import { useState } from 'react'
 import type { Team } from '@/app/page'
 import type { Trainer } from '@/components/TrainersView'
+import type { TrainerTeam } from '@/hooks/useTrainerTeams'
 import StandingsTable from '@/components/StandingsTable'
 import TeamsView from '@/components/TeamsView'
 import TeamForm from '@/components/TeamForm'
 import TrainersView from '@/components/TrainersView'
 import TrainerForm from '@/components/TrainerForm'
+import TrainerProfile from '@/components/TrainerProfile'
 import TrainerDetail from '@/components/TrainerDetail'
+import BracketView from '@/components/BracketView'
+import BracketManagement from '@/components/BracketManagement'
+import MatchupsView from '@/components/MatchupsView'
+import MatchupEditor from '@/components/MatchupEditor'
+import GenerateMatchupsButton from '@/components/GenerateMatchupsButton'
+import type { Matchup } from '@/hooks/useMatchups'
+import AdminItemManager from '@/components/AdminItemManager'
+import AdminItemNotifications from '@/components/AdminItemNotifications'
+import { useItemCatalog } from '@/hooks/useItemCatalog'
+import { useItemSpins } from '@/hooks/useItemSpins'
 
 interface AdminPanelProps {
   teams: Team[]
@@ -16,6 +28,8 @@ interface AdminPanelProps {
   addTeam?: (t: Omit<Team, 'id'>) => Promise<void | any>
   updateTeam?: (t: Team) => Promise<void>
   deleteTeam?: (id: number) => Promise<void>
+  trainerTeams?: TrainerTeam[]
+  updateTrainerTeam?: (t: TrainerTeam) => Promise<void>
   onLogout: () => void
   trainersData?: {
     trainers: Trainer[]
@@ -23,15 +37,23 @@ interface AdminPanelProps {
     updateTrainer: (t: Trainer) => Promise<void>
     deleteTrainer: (id: number) => Promise<void>
   }
+  matchups?: Matchup[]
+  bulkCreateMatchups?: (matchups: Array<Omit<Matchup, 'id' | 'createdAt'>>) => Promise<void>
+  deleteAllMatchups?: () => Promise<void>
+  onUpdateMatchupResult?: (matchup: Matchup) => Promise<void>
 }
 
-type AdminView = 'standings' | 'teams' | 'create' | 'trainers' | 'create-trainer' | 'trainer-detail'
+type AdminView = 'standings' | 'teams' | 'create' | 'matchups' | 'bracket' | 'trainers' | 'create-trainer' | 'trainer-detail' | 'trainer-edit-profile' | 'items' | 'pending-items'
 
 const navItems = [
   { id: 'standings' as AdminView, label: 'Clasificación', icon: TrophyIcon },
   { id: 'teams' as AdminView, label: 'Equipos', icon: ShieldIcon },
   { id: 'create' as AdminView, label: 'Crear Equipo', icon: PlusIcon },
+  { id: 'matchups' as AdminView, label: 'Enfrentamientos', icon: MatchupsIcon },
+  { id: 'bracket' as AdminView, label: 'Bracket', icon: BracketIcon },
   { id: 'trainers' as AdminView, label: 'Entrenadores', icon: TrainerIcon },
+  { id: 'items' as AdminView, label: 'Items Ruleta', icon: ItemsIcon },
+  { id: 'pending-items' as AdminView, label: 'Items Pendientes', icon: BellIcon },
 ]
 
 function TrophyIcon({ className }: { className?: string }) {
@@ -83,10 +105,69 @@ function TrainerIcon({ className }: { className?: string }) {
   )
 }
 
-export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps, updateTeam: updateTeamFromProps, deleteTeam: deleteTeamFromProps, onLogout, trainersData }: AdminPanelProps) {
+function BracketIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>
+  )
+}
+
+function MatchupsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+    </svg>
+  )
+}
+
+function ItemsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+      <line x1="7" y1="7" x2="7.01" y2="7" />
+    </svg>
+  )
+}
+
+function BellIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  )
+}
+
+export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps, updateTeam: updateTeamFromProps, deleteTeam: deleteTeamFromProps, trainerTeams, updateTrainerTeam, onLogout, trainersData, matchups: matchupsFromProps, bulkCreateMatchups, deleteAllMatchups, onUpdateMatchupResult }: AdminPanelProps) {
   const [currentView, setCurrentView] = useState<AdminView>('standings')
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null)
-  
+  const [editingMatchup, setEditingMatchup] = useState<Matchup | null>(null)
+
+  // Resetear selectedTrainer al cambiar de vista
+  const changeView = (view: AdminView) => {
+    setSelectedTrainer(null)
+    setCurrentView(view)
+  }
+
+  // Items de la ruleta
+  const {
+    items: catalogItems,
+    loading: itemsLoading,
+    addItem,
+    updateItem,
+    deleteItem,
+    importFromCSV,
+  } = useItemCatalog()
+
+  const {
+    spins,
+    loading: spinsLoading,
+    markAsDelivered,
+    markAsUndelivered,
+    refreshSpins,
+  } = useItemSpins()
+
   // Use provided trainersData or fallback to hook (for backwards compatibility)
   const trainers = trainersData?.trainers || []
   const addTrainerFromProps = trainersData?.addTrainer || (async () => {})
@@ -96,6 +177,7 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
   // Loading states - check if we have data from parent
   const teamsLoading = false // Data comes from parent, no local loading needed
   const trainersLoading = !trainersData // Only loading if trainersData not provided
+  const matchups = matchupsFromProps || []
 
   const addTeam = async (team: Omit<Team, 'id'>) => {
     console.log('🟠 ADMIN PANEL ADD TEAM:', team)
@@ -230,10 +312,73 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
   }
 
   const handleEditTrainer = (trainer: Trainer) => {
-    // Abrir formulario de edición con el entrenador seleccionado
-    console.log('✏️ Editando entrenador:', trainer)
+    // Abrir el perfil completo con editor (TrainerProfile) para editar avatar, descripcion, pokemon favorito y medallas
+    console.log('✏️ Editando entrenador (perfil completo):', trainer)
     setSelectedTrainer(trainer)
-    setCurrentView('create-trainer') // Reutilizamos la vista de crear
+    setCurrentView('trainer-edit-profile')
+  }
+
+  const handleToggleBadge = async (trainerId: number, badgeIndex: number) => {
+    console.log('🟡 Toggle badge - Trainer ID:', trainerId, 'Badge Index:', badgeIndex)
+    const trainer = trainers.find(t => t.id === trainerId)
+    if (!trainer) return
+
+    try {
+      const updatedBadges = trainer.badges.map((b, i) =>
+        i === badgeIndex ? { ...b, obtained: !b.obtained } : b
+      )
+      await updateTrainer({ ...trainer, badges: updatedBadges })
+    } catch (err) {
+      console.error('Error toggling badge:', err)
+    }
+  }
+
+  const handleBackFromEditProfile = () => {
+    setSelectedTrainer(null)
+    setCurrentView('trainers')
+  }
+
+  const updateBracketPosition = async (teamId: number, position: number | null) => {
+    console.log('🔵 UPDATE BRACKET POSITION - Team ID:', teamId, 'Position:', position)
+    try {
+      // Actualizar estado local inmediatamente
+      setTeams(prev => prev.map(t => 
+        t.id === teamId ? { ...t, bracketPosition: position } : t
+      ))
+      
+      // Intentar guardar en Supabase si está disponible
+      if (updateTeamFromProps) {
+        // Buscar el equipo actualizado
+        const team = teams.find(t => t.id === teamId)
+        if (team) {
+          const updatedTeam = { ...team, bracketPosition: position }
+          console.log('✅ Calling updateTeam from props with bracket position')
+          await updateTeamFromProps(updatedTeam)
+        }
+      }
+    } catch (error) {
+      console.error('Error updating bracket position:', error)
+    }
+  }
+
+  const handleUpdateMatchupResult = async (updatedMatchup: Matchup) => {
+    console.log('🟡 ADMIN PANEL Updating matchup result:', updatedMatchup)
+    console.log('🔍 onUpdateMatchupResult exists?', !!onUpdateMatchupResult)
+    try {
+      // Delegar la lógica de actualización a page.tsx si está disponible
+      if (onUpdateMatchupResult) {
+        console.log('✅ Calling onUpdateMatchupResult...')
+        await onUpdateMatchupResult(updatedMatchup)
+        console.log('✅ onUpdateMatchupResult completed')
+      } else {
+        // Fallback: solo actualizar el enfrentamiento sin puntos
+        console.warn('⚠️ No onUpdateMatchupResult provided, updating matchup only')
+      }
+      setEditingMatchup(null)
+    } catch (err: any) {
+      console.error('Error updating matchup:', err)
+      throw err
+    }
   }
 
   if (teamsLoading || trainersLoading) {
@@ -292,15 +437,15 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
             </div>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-2" aria-label="Navegación de administración">
+            <nav className="hidden md:flex items-center gap-1.5" aria-label="Navegación de administración">
               {navItems.map((item) => {
                 const Icon = item.icon
                 const isActive = currentView === item.id
                 return (
                   <button
                     key={item.id}
-                    onClick={() => setCurrentView(item.id)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold tracking-wide transition-all duration-200 border ${isActive ? 'nav-active' : ''}`}
+                    onClick={() => changeView(item.id)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-200 border ${isActive ? 'nav-active' : ''}`}
                     style={{
                       color: isActive ? '#f59e0b' : '#64748b',
                       borderColor: isActive ? 'rgba(245,158,11,0.5)' : 'rgba(79,195,247,0.08)',
@@ -308,7 +453,7 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
                     }}
                     aria-current={isActive ? 'page' : undefined}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-3.5 h-3.5" />
                     {item.label}
                   </button>
                 )
@@ -317,7 +462,7 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
               {/* Logout button */}
               <button
                 onClick={onLogout}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold tracking-wide transition-all duration-200 border ml-2"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-200 border ml-2"
                 style={{
                   color: '#ef4444',
                   borderColor: 'rgba(239, 68, 68, 0.3)',
@@ -334,7 +479,7 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
                   el.style.boxShadow = 'none'
                 }}
               >
-                <LogoutIcon className="w-4 h-4" />
+                <LogoutIcon className="w-3.5 h-3.5" />
                 Salir
               </button>
             </nav>
@@ -343,7 +488,7 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
             <div className="md:hidden flex items-center gap-2">
               <select
                 value={currentView}
-                onChange={e => setCurrentView(e.target.value as AdminView)}
+                onChange={e => changeView(e.target.value as AdminView)}
                 className="px-3 py-2 rounded-xl text-sm font-semibold border bg-transparent"
                 style={{
                   color: '#f59e0b',
@@ -374,10 +519,74 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
       {/* Main content */}
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {currentView === 'standings' && (
-          <StandingsTable teams={teams} onNavigate={(id) => setCurrentView(id as AdminView)} />
+          <StandingsTable teams={teams} matchups={matchups} onNavigate={(id) => changeView(id as AdminView)} trainers={trainers} />
         )}
         {currentView === 'teams' && (
-          <TeamsView teams={teams} onEdit={() => setCurrentView('create')} />
+          <div className="space-y-6">
+            <TeamsView teams={teams} onEdit={() => changeView('create')} />
+
+            {/* Gestion de equipos oficiales de entrenadores */}
+            {trainerTeams && trainerTeams.some(t => t.isOfficial) && (
+              <div className="glass-card p-6">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#f59e0b' }}>
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                  Equipos Oficiales de Entrenadores
+                </h3>
+                <p className="text-sm mb-4" style={{ color: '#64748b' }}>
+                  Aqui puedes desoficializar equipos que los entrenadores hayan marcado como oficiales.
+                </p>
+                <div className="space-y-3">
+                  {trainerTeams.filter(t => t.isOfficial).map(officialTeam => {
+                    const trainerName = trainers.find(t => t.id === officialTeam.trainerId)?.name || 'Desconocido'
+                    return (
+                      <div
+                        key={officialTeam.id}
+                        className="flex items-center justify-between p-4 rounded-xl"
+                        style={{ background: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.2)' }}
+                      >
+                        <div className="flex items-center gap-3">
+                          {officialTeam.pokemons[0] && (
+                            <img
+                              src={officialTeam.pokemons[0].image}
+                              alt={officialTeam.pokemons[0].name}
+                              className="w-10 h-10"
+                              style={{ imageRendering: 'pixelated' }}
+                            />
+                          )}
+                          <div>
+                            <p className="font-bold text-sm" style={{ color: '#e8eaf6' }}>{officialTeam.teamName}</p>
+                            <p className="text-xs" style={{ color: '#64748b' }}>Entrenador: {trainerName}</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            if (confirm(`Desoficializar "${officialTeam.teamName}" de ${trainerName}?`)) {
+                              await updateTrainerTeam?.({ ...officialTeam, isOfficial: false })
+                              // Tambien eliminar de la tabla teams si existe
+                              const teamInTable = teams.find(t => t.trainerName === trainerName && t.teamName === officialTeam.teamName)
+                              if (teamInTable && deleteTeamFromProps) {
+                                await deleteTeamFromProps(teamInTable.id)
+                              }
+                            }
+                          }}
+                          className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
+                          style={{
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            color: '#ef4444',
+                          }}
+                        >
+                          Desoficializar
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         )}
         {currentView === 'create' && (
           <TeamForm
@@ -388,11 +597,44 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
             trainers={trainers}
           />
         )}
+        {currentView === 'matchups' && (
+          <div className="space-y-6">
+            <GenerateMatchupsButton
+              teams={teams}
+              existingMatchups={matchups}
+              onGenerate={async (newMatchups) => {
+                if (bulkCreateMatchups) {
+                  await bulkCreateMatchups(newMatchups)
+                }
+              }}
+              onDelete={async () => {
+                if (deleteAllMatchups) {
+                  await deleteAllMatchups()
+                }
+              }}
+            />
+            
+            {matchups.length > 0 && (
+              <MatchupsView
+                matchups={matchups}
+                teams={teams}
+                isAdmin={true}
+                onEditMatchup={setEditingMatchup}
+              />
+            )}
+          </div>
+        )}
+        {currentView === 'bracket' && (
+          <BracketManagement 
+            teams={teams} 
+            onUpdatePosition={updateBracketPosition}
+          />
+        )}
         {currentView === 'trainers' && !selectedTrainer && (
           <>
             <div className="flex justify-end mb-6">
               <button
-                onClick={() => setCurrentView('create-trainer')}
+                onClick={() => changeView('create-trainer')}
                 className="btn-glow flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold tracking-wider uppercase"
               >
                 <PlusIcon className="w-4 h-4" />
@@ -403,10 +645,123 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
           </>
         )}
         {currentView === 'trainer-detail' && selectedTrainer && (
-          <TrainerDetail 
-            trainer={selectedTrainer} 
-            onBack={handleBackFromDetail}
-            onEdit={handleEditTrainer}
+          <div className="space-y-6">
+            {/* Seccion de equipo oficial del entrenador */}
+            {trainerTeams && trainerTeams.some(t => t.trainerId === selectedTrainer.id && t.isOfficial) && (
+              <div className="glass-card p-6">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#f59e0b' }}>
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                  Equipo Oficial
+                </h3>
+                {trainerTeams.filter(t => t.trainerId === selectedTrainer.id && t.isOfficial).map(officialTeam => (
+                  <div
+                    key={officialTeam.id}
+                    className="p-5 rounded-xl"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.02))',
+                      border: '1px solid rgba(245, 158, 11, 0.3)',
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        {officialTeam.pokemons.slice(0, 6).map((p, i) => (
+                          <img
+                            key={i}
+                            src={p.image}
+                            alt={p.name}
+                            className="w-10 h-10"
+                            style={{ imageRendering: 'pixelated' }}
+                            title={p.name}
+                          />
+                        ))}
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold" style={{ color: '#e8eaf6' }}>{officialTeam.teamName}</p>
+                        <p className="text-xs" style={{ color: '#64748b' }}>
+                          {officialTeam.pokemons.length} pokemons | {officialTeam.format === 'league' ? 'Formato Liga' : 'Formato Practica'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        onClick={async () => {
+                          if (confirm(`Desoficializar "${officialTeam.teamName}" de ${selectedTrainer.name}?`)) {
+                            await updateTrainerTeam?.({ ...officialTeam, isOfficial: false })
+                            // Tambien eliminar de la tabla teams si existe
+                            const teamInTable = teams.find(t => t.trainerName === selectedTrainer.name && t.teamName === officialTeam.teamName)
+                            if (teamInTable && deleteTeamFromProps) {
+                              await deleteTeamFromProps(teamInTable.id)
+                            }
+                          }
+                        }}
+                        className="px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.12)',
+                          border: '1px solid rgba(239, 68, 68, 0.4)',
+                          color: '#ef4444',
+                        }}
+                        onMouseEnter={e => {
+                          (e.currentTarget as HTMLElement).style.background = 'rgba(239, 68, 68, 0.25)'
+                        }}
+                        onMouseLeave={e => {
+                          (e.currentTarget as HTMLElement).style.background = 'rgba(239, 68, 68, 0.12)'
+                        }}
+                      >
+                        Desactivar como oficial
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <TrainerDetail
+              trainer={selectedTrainer}
+              onBack={handleBackFromDetail}
+              onEdit={handleEditTrainer}
+              onToggleBadge={handleToggleBadge}
+              isAdmin={true}
+            />
+          </div>
+        )}
+        {currentView === 'trainer-edit-profile' && selectedTrainer && (
+          <TrainerProfile
+            trainer={selectedTrainer}
+            onUpdateProfile={async (data) => {
+              const updated = {
+                ...selectedTrainer,
+                description: data.description ?? selectedTrainer.description,
+                avatarSprite: data.avatarSprite ?? selectedTrainer.avatarSprite,
+                favoritePokemon: data.favoritePokemon ?? selectedTrainer.favoritePokemon,
+                favoritePokemonImage: data.favoritePokemonImage ?? selectedTrainer.favoritePokemonImage,
+                badges: data.badges ?? selectedTrainer.badges,
+              }
+              await updateTrainer(updated)
+              setSelectedTrainer(updated)
+            }}
+            onBack={handleBackFromEditProfile}
+            isAdminMode={true}
+            onToggleBadge={handleToggleBadge}
+          />
+        )}
+        {currentView === 'items' && (
+          <AdminItemManager
+            items={catalogItems}
+            onAdd={addItem}
+            onUpdate={updateItem}
+            onDelete={deleteItem}
+            onImportCSV={importFromCSV}
+          />
+        )}
+        {currentView === 'pending-items' && (
+          <AdminItemNotifications
+            spins={spins}
+            items={catalogItems}
+            onMarkDelivered={markAsDelivered}
+            onMarkUndelivered={markAsUndelivered}
+            onRefresh={refreshSpins}
           />
         )}
         {currentView === 'create-trainer' && (
@@ -418,6 +773,20 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
           />
         )}
       </main>
+
+      {/* Matchup Editor Modal */}
+      {editingMatchup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-scale">
+          <div className="glass-card max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <MatchupEditor
+              matchup={editingMatchup}
+              teams={teams}
+              onSave={handleUpdateMatchupResult}
+              onClose={() => setEditingMatchup(null)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Footer indicator */}
       <div

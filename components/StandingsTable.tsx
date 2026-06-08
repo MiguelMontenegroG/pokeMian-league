@@ -1,11 +1,23 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import type { Team } from '@/app/page'
+import { useMemo, useState, useEffect } from 'react'
+import type { Team, Matchup } from '@/app/page'
+import type { Trainer } from '@/components/TrainersView'
+
+// Helper para obtener URL de avatar
+function getAvatarUrl(spriteId: number | null | undefined): string | null {
+  if (!spriteId) return null
+  if (spriteId < 1 || spriteId > 93) return null
+  return `/sprites_profile/${String(spriteId).padStart(3, '0')}.png`
+}
 
 interface Props {
   teams: Team[]
+  matchups?: Matchup[]
   onNavigate: (view: string) => void
+  trainers?: Trainer[]
+  trainer?: { id: number; name: string } | null
+  onNavigateToMyTeams?: () => void
 }
 
 const RANK_COLORS: Record<number, { color: string; glow: string; label: string; bg: string }> = {
@@ -49,17 +61,84 @@ function StatBar({ value, max, color }: { value: number; max: number; color: str
   )
 }
 
-export default function StandingsTable({ teams, onNavigate }: Props) {
-  const sorted = [...teams].sort((a, b) => b.points - a.points)
-  const maxPoints = sorted[0]?.points || 1
-  const maxWins = Math.max(...teams.map(t => t.wins), 1)
-  const [visible, setVisible] = useState(false)
+export default function StandingsTable({ teams, matchups = [], onNavigate, trainer, onNavigateToMyTeams, trainers = [] }: Props) {
+  // Calcular Pokémon vivos totales por equipo desde los enfrentamientos jugados (usando useMemo para evitar loops)
+  const pokemonAliveStats = useMemo(() => {
+    console.log('🔵 Calculando PKM Vivos - Teams:', teams.length, 'Matchups:', matchups.length)
+    console.log('📦 Matchups received in StandingsTable:', matchups.map(m => ({
+      id: m.id,
+      round: m.roundNumber,
+      played: m.played,
+      teamA: m.teamAId,
+      teamB: m.teamBId,
+      aliveA: m.teamAPokemonAlive,
+      aliveB: m.teamBPokemonAlive
+    })))
+    const stats = new Map<number, number>()
+    
+    // Inicializar todos los equipos con 0
+    teams.forEach(team => {
+      stats.set(team.id, 0)
+    })
+    
+    // Sumar Pokémon vivos de cada enfrentamiento jugado para AMBOS equipos
+    matchups.forEach(matchup => {
+      console.log('🔍 [StandingsTable] Matchup ID:', matchup.id, 'Round:', matchup.roundNumber)
+      console.log('   Played:', matchup.played, '| TeamA:', matchup.teamAId, 'TeamB:', matchup.teamBId)
+      console.log('   Alive A:', matchup.teamAPokemonAlive, 'Alive B:', matchup.teamBPokemonAlive)
+      
+      if (matchup.played) {
+        // Solo contar si el enfrentamiento está jugado
+        const teamAPokemonAlive = matchup.teamAPokemonAlive || 0
+        const teamBPokemonAlive = matchup.teamBPokemonAlive || 0
+        
+        console.log('   ✅ Sumando PKM vivos - Team', matchup.teamAId, ':', teamAPokemonAlive)
+        console.log('   ✅ Sumando PKM vivos - Team', matchup.teamBId, ':', teamBPokemonAlive)
+        
+        // Sumar al equipo A
+        const currentAliveA = stats.get(matchup.teamAId) || 0
+        stats.set(matchup.teamAId, currentAliveA + teamAPokemonAlive)
+        
+        // Sumar al equipo B
+        const currentAliveB = stats.get(matchup.teamBId) || 0
+        stats.set(matchup.teamBId, currentAliveB + teamBPokemonAlive)
+      } else {
+        console.log('   ❌ Skip (not played)')
+      }
+    })
+    
+    console.log('📊 Stats finales:', Object.fromEntries(stats))
+    return stats
+  }, [teams, matchups]) // Solo se recalcula cuando teams o matchups cambian realmente
+  
+  // Calcular estadísticas de combates por equipo
+  const combatStats = useMemo(() => {
+    const stats = new Map<number, { played: number; total: number }>()
 
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 50)
-    return () => clearTimeout(t)
-  }, [])
+    // Inicializar todos los equipos
+    teams.forEach(team => {
+      stats.set(team.id, { played: 0, total: 0 })
+    })
 
+    // Calcular cuantos combates tiene cada equipo (jugados y totales)
+    teams.forEach(team => {
+      const teamMatchups = matchups.filter(m => m.teamAId === team.id || m.teamBId === team.id)
+      const totalForTeam = teamMatchups.length
+      const playedForTeam = teamMatchups.filter(m => m.played).length
+      stats.set(team.id, { played: playedForTeam, total: totalForTeam })
+    })
+
+    return stats
+  }, [teams, matchups])
+
+  const sorted = [...teams].sort((a, b) => {
+    // Primero ordenar por puntos
+    if (b.points !== a.points) return b.points - a.points
+    // En caso de empate, usar Pokémon vivos como desempate
+    const aliveA = pokemonAliveStats.get(a.id) || 0
+    const aliveB = pokemonAliveStats.get(b.id) || 0
+    return aliveB - aliveA
+  })
   if (teams.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-6 animate-fade-scale">
@@ -75,7 +154,15 @@ export default function StandingsTable({ teams, onNavigate }: Props) {
           <h2 className="text-2xl font-bold mb-2" style={{ color: '#e8eaf6' }}>Sin equipos registrados</h2>
           <p className="mb-6" style={{ color: '#64748b' }}>Crea el primer equipo para comenzar la liga</p>
           <button
-            onClick={() => onNavigate('create')}
+            onClick={() => {
+              if (trainer && onNavigateToMyTeams) {
+                onNavigateToMyTeams()
+              } else if (!trainer) {
+                alert('Debes iniciar sesión como entrenador para crear un equipo.')
+              } else {
+                onNavigate('create')
+              }
+            }}
             className="btn-glow px-6 py-3 rounded-xl text-sm font-bold tracking-wider uppercase"
           >
             Crear primer equipo
@@ -87,7 +174,7 @@ export default function StandingsTable({ teams, onNavigate }: Props) {
 
   return (
     <div
-      className={`transition-all duration-500 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+      className="transition-all duration-500 opacity-100 translate-y-0"
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
@@ -140,13 +227,25 @@ export default function StandingsTable({ teams, onNavigate }: Props) {
                 <div className="mb-3">
                   <MedalIcon rank={realRank} />
                 </div>
-                {/* Pokemon preview */}
-                {team.pokemons[0] && (
+                {/* Avatar del entrenador */}
+                {(trainers.find(t => t.name === team.trainerName)?.avatarSprite) ? (
+                  <div className="relative mb-2">
+                    <img
+                      src={getAvatarUrl(trainers.find(t => t.name === team.trainerName)?.avatarSprite) || ''}
+                      alt={team.trainerName}
+                      className="w-28 h-28 rounded-lg object-cover"
+                      style={{
+                        border: `2px solid ${rankInfo.color}`,
+                        boxShadow: `0 0 12px ${rankInfo.glow}`,
+                      }}
+                    />
+                  </div>
+                ) : team.pokemons[0] && (
                   <div className="relative mb-2">
                     <img
                       src={team.pokemons[0].image}
                       alt={team.pokemons[0].name}
-                      className="w-16 h-16 pokemon-sprite"
+                      className="w-28 h-28 pokemon-sprite"
                       style={{ filter: `drop-shadow(0 0 12px ${rankInfo.glow})` }}
                       crossOrigin="anonymous"
                     />
@@ -194,13 +293,15 @@ export default function StandingsTable({ teams, onNavigate }: Props) {
                 <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-widest hidden md:table-cell" style={{ color: '#475569' }}>Entrenador</th>
                 <th className="px-5 py-4 text-right text-xs font-bold uppercase tracking-widest" style={{ color: '#475569' }}>Puntos</th>
                 <th className="px-5 py-4 text-right text-xs font-bold uppercase tracking-widest hidden sm:table-cell" style={{ color: '#475569' }}>Victorias</th>
-                <th className="px-5 py-4 text-right text-xs font-bold uppercase tracking-widest hidden lg:table-cell" style={{ color: '#475569' }}>Progreso</th>
+                <th className="px-5 py-4 text-right text-xs font-bold uppercase tracking-widest" style={{ color: '#475569' }}>PKM Vivos</th>
+                <th className="px-5 py-4 text-center text-xs font-bold uppercase tracking-widest hidden lg:table-cell" style={{ color: '#475569' }}>Combates</th>
               </tr>
             </thead>
             <tbody>
               {sorted.map((team, index) => {
                 const rank = index + 1
                 const rankInfo = RANK_COLORS[rank]
+                const isQualified = rank <= 4 && team.bracketPosition !== null && team.bracketPosition !== undefined
                 return (
                   <tr
                     key={team.id}
@@ -219,6 +320,20 @@ export default function StandingsTable({ teams, onNavigate }: Props) {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
                         <MedalIcon rank={rank} />
+                        {isQualified && (
+                          <div
+                            className="w-6 h-6 rounded-full flex items-center justify-center"
+                            style={{ 
+                              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                              boxShadow: '0 0 8px rgba(245,158,11,0.5)'
+                            }}
+                            title="Clasificado al Bracket"
+                          >
+                            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="white">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-5 py-4">
@@ -243,7 +358,19 @@ export default function StandingsTable({ teams, onNavigate }: Props) {
                       </div>
                     </td>
                     <td className="px-5 py-4 hidden md:table-cell">
-                      <span className="text-sm" style={{ color: '#64748b' }}>{team.trainerName}</span>
+                      <div className="flex items-center gap-2">
+                        {(trainers.find(t => t.name === team.trainerName)?.avatarSprite) ? (
+                          <img
+                            src={getAvatarUrl(trainers.find(t => t.name === team.trainerName)?.avatarSprite) || ''}
+                            alt={team.trainerName}
+                            className="w-7 h-7 rounded object-cover flex-shrink-0"
+                            style={{
+                              border: rankInfo ? `1.5px solid ${rankInfo.color}` : '1.5px solid rgba(79,195,247,0.3)',
+                            }}
+                          />
+                        ) : null}
+                        <span className="text-sm" style={{ color: '#64748b' }}>{team.trainerName}</span>
+                      </div>
                     </td>
                     <td className="px-5 py-4 text-right">
                       <span
@@ -261,18 +388,35 @@ export default function StandingsTable({ teams, onNavigate }: Props) {
                         {team.wins}W
                       </span>
                     </td>
+                    <td className="px-5 py-4 text-right">
+                      <span className="text-base font-bold" style={{ color: '#f59e0b' }}>
+                        {pokemonAliveStats.get(team.id) || 0}
+                      </span>
+                    </td>
                     <td className="px-5 py-4 hidden lg:table-cell">
-                      <div className="w-32 ml-auto">
-                        <div className="flex justify-between text-xs mb-1" style={{ color: '#475569' }}>
-                          <span>PTS</span>
-                          <span>{Math.round((team.points / maxPoints) * 100)}%</span>
+                      <div className="w-36 mx-auto text-center">
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <span className="text-sm font-bold" style={{ color: '#10b981' }}>
+                            {combatStats.get(team.id)?.played || 0}
+                          </span>
+                          <span className="text-xs" style={{ color: '#475569' }}>/</span>
+                          <span className="text-sm font-bold" style={{ color: '#4fc3f7' }}>
+                            {combatStats.get(team.id)?.total || 0}
+                          </span>
                         </div>
-                        <StatBar value={team.points} max={maxPoints} color={rankInfo?.color || '#4fc3f7'} />
-                        <div className="flex justify-between text-xs mt-2 mb-1" style={{ color: '#475569' }}>
-                          <span>WIN</span>
-                          <span>{Math.round((team.wins / maxWins) * 100)}%</span>
+                        <div className="text-xs font-semibold" style={{ color: '#475569' }}>
+                          Combates
                         </div>
-                        <StatBar value={team.wins} max={maxWins} color="#10b981" />
+                        <div className="w-full rounded-full overflow-hidden mt-2" style={{ height: 4, background: 'rgba(255,255,255,0.05)' }}>
+                          <div
+                            className="h-full rounded-full transition-all duration-1000 ease-out"
+                            style={{
+                              width: `${combatStats.get(team.id)?.total ? ((combatStats.get(team.id)?.played || 0) / (combatStats.get(team.id)?.total || 1)) * 100 : 0}%`,
+                              background: (combatStats.get(team.id)?.played || 0) === (combatStats.get(team.id)?.total || 0) ? '#10b981' : '#4fc3f7',
+                              boxShadow: (combatStats.get(team.id)?.played || 0) === (combatStats.get(team.id)?.total || 0) ? '0 0 6px #10b981' : '0 0 6px #4fc3f7',
+                            }}
+                          />
+                        </div>
                       </div>
                     </td>
                   </tr>

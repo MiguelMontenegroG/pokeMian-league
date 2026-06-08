@@ -7,17 +7,39 @@ interface Props {
   trainer: Trainer
   onBack: () => void
   onEdit?: (trainer: Trainer) => void
+  onToggleBadge?: (trainerId: number, badgeIndex: number) => Promise<void>
+  isAdmin?: boolean
 }
 
-export default function TrainerDetail({ trainer, onBack, onEdit }: Props) {
-  const obtainedBadges = trainer.badges.filter(b => b.obtained).length
+export default function TrainerDetail({ trainer, onBack, onEdit, onToggleBadge, isAdmin }: Props) {
+  const [localTrainer, setLocalTrainer] = useState<Trainer>(trainer)
+  const [togglingBadge, setTogglingBadge] = useState<number | null>(null)
+  const obtainedBadges = localTrainer.badges.filter(b => b.obtained).length
   const allBadgesObtained = obtainedBadges === 8
-  const [isEditing, setIsEditing] = useState(false)
 
   const handleEditClick = () => {
     console.log('✏️ Editando entrenador:', trainer.name)
     if (onEdit) {
-      onEdit(trainer)
+      onEdit(localTrainer)
+    }
+  }
+
+  const handleBadgeClick = async (index: number) => {
+    if (!isAdmin || !onToggleBadge) return
+    setTogglingBadge(index)
+    try {
+      await onToggleBadge(localTrainer.id, index)
+      // Actualizar localmente para feedback inmediato
+      setLocalTrainer(prev => ({
+        ...prev,
+        badges: prev.badges.map((b, i) =>
+          i === index ? { ...b, obtained: !b.obtained } : b
+        )
+      }))
+    } catch (err) {
+      console.error('Error toggling badge:', err)
+    } finally {
+      setTogglingBadge(null)
     }
   }
 
@@ -191,10 +213,12 @@ export default function TrainerDetail({ trainer, onBack, onEdit }: Props) {
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {trainer.badges.map((badge, index) => (
+          {localTrainer.badges.map((badge, index) => (
             <div
               key={index}
               className="relative group"
+              onClick={() => handleBadgeClick(index)}
+              style={{ cursor: isAdmin ? 'pointer' : 'default' }}
             >
               <div
                 className="flex flex-col items-center justify-center p-4 rounded-2xl transition-all duration-300"
@@ -203,22 +227,27 @@ export default function TrainerDetail({ trainer, onBack, onEdit }: Props) {
                     ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.08))'
                     : 'rgba(255,255,255,0.02)',
                   border: badge.obtained
-                    ? '2px solid rgba(245, 158, 11, 0.4)'
+                    ? '2px solid rgba(245, 158, 11, 0.5)'
                     : '2px dashed rgba(79, 195, 247, 0.15)',
+                  boxShadow: badge.obtained
+                    ? '0 0 20px rgba(245, 158, 11, 0.2)'
+                    : 'none',
                   transform: badge.obtained ? 'scale(1.02)' : 'scale(1)',
+                  opacity: togglingBadge === index ? 0.5 : 1,
                 }}
               >
                 <img
-  src={badge.image}
-  alt={badge.name}
-  className="w-14 h-14 object-contain mb-3 transition-all duration-300 group-hover:scale-110"
-  style={{
-    imageRendering: 'pixelated',
-    filter: badge.obtained
-      ? 'drop-shadow(0 0 16px rgba(245, 158, 11, 0.7))'
-      : 'grayscale(100%) opacity(0.25)',
-  }}
-/>
+                  src={badge.image}
+                  alt={badge.name}
+                  className="w-14 h-14 object-contain mb-3 transition-all duration-300 group-hover:scale-110"
+                  style={{
+                    imageRendering: 'pixelated',
+                    filter: badge.obtained
+                      ? 'drop-shadow(0 0 16px rgba(245, 158, 11, 0.7))'
+                      : 'grayscale(100%) opacity(0.25)',
+                    transition: 'filter 0.3s ease',
+                  }}
+                />
                 <span
                   className="text-sm font-bold uppercase tracking-wider"
                   style={{
@@ -237,6 +266,15 @@ export default function TrainerDetail({ trainer, onBack, onEdit }: Props) {
                       boxShadow: '0 0 10px rgba(245, 158, 11, 0.8)',
                     }}
                   />
+                )}
+
+                {isAdmin && (
+                  <div
+                    className="absolute bottom-2 right-2 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ color: badge.obtained ? '#ef4444' : '#10b981' }}
+                  >
+                    {badge.obtained ? 'Quitar' : 'Dar'}
+                  </div>
                 )}
               </div>
             </div>
@@ -268,6 +306,11 @@ export default function TrainerDetail({ trainer, onBack, onEdit }: Props) {
               }}
             />
           </div>
+          {isAdmin && (
+            <p className="text-xs mt-2 text-center" style={{ color: '#64748b' }}>
+              Haz clic en una medalla para {obtainedBadges > 0 ? 'marcar/desmarcar' : 'otorgarla'}
+            </p>
+          )}
         </div>
       </div>
 
@@ -289,7 +332,7 @@ export default function TrainerDetail({ trainer, onBack, onEdit }: Props) {
             <span className="text-4xl"></span>
           </div>
           <p className="text-base" style={{ color: '#e8eaf6' }}>
-            {trainer.name} ha conseguido las 8 medallas de Johto y puede competir en la Liga Pokémon
+            {localTrainer.name} ha conseguido las 8 medallas de Johto y puede competir en la Liga Pokémon
           </p>
           <p className="text-lg font-bold mt-3" style={{ color: '#f59e0b', textShadow: '0 0 10px rgba(245, 158, 11, 0.5)' }}>
             ¡Clasifica a la PokeMian League!
