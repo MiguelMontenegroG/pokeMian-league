@@ -428,6 +428,7 @@ export default function AdminItemManager({ items, onAdd, onUpdate, onDelete, onI
                 <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider" style={{ color: '#64748b' }}>Nombre</th>
                 <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider" style={{ color: '#64748b' }}>Rareza</th>
                 <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider" style={{ color: '#64748b' }}>Descripcion</th>
+                <th className="text-center py-3 px-4 text-xs font-bold uppercase tracking-wider" style={{ color: '#64748b' }}>Activo</th>
                 <th className="text-right py-3 px-4 text-xs font-bold uppercase tracking-wider" style={{ color: '#64748b' }}>Acciones</th>
               </tr>
             </thead>
@@ -439,6 +440,8 @@ export default function AdminItemManager({ items, onAdd, onUpdate, onDelete, onI
                   style={{
                     borderBottom: '1px solid rgba(79,195,247,0.05)',
                     animationDelay: `${index * 30}ms`,
+                    opacity: item.enabled ? 1 : 0.45,
+                    filter: item.enabled ? 'none' : 'grayscale(0.5)',
                   }}
                 >
                   <td className="py-3 px-4">
@@ -476,6 +479,23 @@ export default function AdminItemManager({ items, onAdd, onUpdate, onDelete, onI
                     <span className="text-xs" style={{ color: '#64748b' }}>
                       {item.description}
                     </span>
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    <button
+                      onClick={async () => {
+                        await onUpdate({ ...item, enabled: !item.enabled })
+                      }}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        item.enabled ? 'bg-green-500' : 'bg-gray-600'
+                      }`}
+                      title={item.enabled ? 'Deshabilitar item' : 'Habilitar item'}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          item.enabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
                   </td>
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

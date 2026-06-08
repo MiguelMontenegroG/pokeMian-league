@@ -144,6 +144,7 @@ export function useItemSpins() {
         rarity: itemData.rarity,
         sprite: itemData.sprite,
         description: itemData.description || '',
+        enabled: itemData.enabled ?? true,
       }
       return { item, delivered: data.delivered }
     } catch (err) {

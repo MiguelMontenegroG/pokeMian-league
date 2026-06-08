@@ -24,15 +24,18 @@ export function useItemCatalog() {
         const saved = localStorage.getItem('pokeMianItemCatalog')
         if (saved) {
           const parsed = JSON.parse(saved) as Item[]
-          setItems(parsed)
+          // Asegurar que todos tengan el campo enabled (retrocompatibilidad)
+          const migrated = parsed.map(item => ({ ...item, enabled: item.enabled ?? true }))
+          setItems(migrated)
         } else {
           // Primera vez: usar los items por defecto y guardarlos
-          setItems(defaultItems)
-          localStorage.setItem('pokeMianItemCatalog', JSON.stringify(defaultItems))
+          const defaultWithEnabled = defaultItems.map(item => ({ ...item, enabled: true }))
+          setItems(defaultWithEnabled)
+          localStorage.setItem('pokeMianItemCatalog', JSON.stringify(defaultWithEnabled))
         }
       } catch (err) {
         console.error('Error loading item catalog:', err)
-        setItems(defaultItems)
+        setItems(defaultItems.map(item => ({ ...item, enabled: true })))
       } finally {
         setLoading(false)
       }
@@ -59,6 +62,7 @@ export function useItemCatalog() {
           rarity: item.rarity as Item['rarity'],
           sprite: item.sprite,
           description: item.description || '',
+          enabled: item.enabled ?? true, // Por defecto habilitado
         }))
         setItems(parsed)
       } else {
@@ -71,7 +75,7 @@ export function useItemCatalog() {
       console.error('Error loading items:', err)
       setError(err.message)
       // Solo en caso de error de conexion usamos fallback
-      setItems(defaultItems)
+      setItems(defaultItems.map(item => ({ ...item, enabled: true })))
     } finally {
       setLoading(false)
     }
@@ -81,7 +85,7 @@ export function useItemCatalog() {
   const addItem = async (item: Omit<Item, 'id'>): Promise<Item | null> => {
     try {
       if (!isSupabaseConfigured) {
-        const newItem = { ...item, id: Date.now() }
+        const newItem = { ...item, id: Date.now(), enabled: true }
         const updated = [...items, newItem]
         setItems(updated)
         localStorage.setItem('pokeMianItemCatalog', JSON.stringify(updated))
@@ -90,7 +94,7 @@ export function useItemCatalog() {
 
       const { data, error } = await supabase
         .from('item_catalog')
-        .insert([{ name: item.name, rarity: item.rarity, sprite: item.sprite, description: item.description }])
+        .insert([{ name: item.name, rarity: item.rarity, sprite: item.sprite, description: item.description, enabled: true }])
         .select()
 
       if (error) throw error
@@ -102,6 +106,7 @@ export function useItemCatalog() {
           rarity: data[0].rarity,
           sprite: data[0].sprite,
           description: data[0].description || '',
+          enabled: data[0].enabled ?? true,
         }
         setItems(prev => [...prev, parsed])
         return parsed
@@ -130,6 +135,7 @@ export function useItemCatalog() {
           rarity: updated.rarity,
           sprite: updated.sprite,
           description: updated.description,
+          enabled: updated.enabled,
         })
         .eq('id', updated.id)
 

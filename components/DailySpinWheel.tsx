@@ -69,11 +69,14 @@ export default function DailySpinWheel({
   // Usar seed diario para que los items sean CONSISTENTES durante todo el dia
   // Asi los jugadores no pueden cerrar/abrir la ruleta para rerollear los items visibles
   const displayItems = useMemo(() => {
+    // Filtrar solo items habilitados
+    const enabledItems = items.filter(i => i.enabled !== false)
+
     // Separar por rareza
-    const legendary = items.filter(i => i.rarity === 'legendario')
-    const epic = items.filter(i => i.rarity === 'epico')
-    const rare = items.filter(i => i.rarity === 'raro')
-    const common = items.filter(i => i.rarity === 'comun')
+    const legendary = enabledItems.filter(i => i.rarity === 'legendario')
+    const epic = enabledItems.filter(i => i.rarity === 'epico')
+    const rare = enabledItems.filter(i => i.rarity === 'raro')
+    const common = enabledItems.filter(i => i.rarity === 'comun')
 
     // Queremos 3 legendarios, 5 epicos, 7 raros, 10 comunes = 25
     const selectedLegendary = seededShuffle(legendary, dailySeed + '-legendary').slice(0, 3)
