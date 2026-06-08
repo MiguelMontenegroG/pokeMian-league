@@ -611,6 +611,15 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
                 if (deleteAllMatchups) {
                   await deleteAllMatchups()
                 }
+                // Resetear estadisticas de todos los equipos al borrar enfrentamientos
+                for (const team of teams) {
+                  await updateTeam({
+                    ...team,
+                    wins: 0,
+                    gamesPlayed: 0,
+                    points: 0,
+                  })
+                }
               }}
             />
             
