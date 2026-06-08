@@ -116,7 +116,7 @@ function PokemonSlot({ pokemon, index }: { pokemon?: Pokemon; index: number }) {
           )}
         </>
       ) : (
-        <span style={{ fontSize: '0.6rem', color: '#2d3748', textAlign: 'center' }}>VacÃ­o</span>
+        <span style={{ fontSize: '0.6rem', color: '#2d3748', textAlign: 'center' }}>Vacio</span>
       )}
     </div>
   )
@@ -163,7 +163,7 @@ function TeamCard({ team, index }: { team: Team; index: number }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs" style={{ color: '#475569' }}>
-                {team.pokemons.length}/10 PokÃ©mon
+                {team.pokemons.length}/10 Pokemon
               </span>
             </div>
             <h3
@@ -212,7 +212,7 @@ function TeamCard({ team, index }: { team: Team; index: number }) {
           className="grid gap-2"
           style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}
           role="list"
-          aria-label={`PokÃ©mon de ${team.teamName}`}
+          aria-label={`Pokemon de ${team.teamName}`}
         >
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} role="listitem">
@@ -245,7 +245,7 @@ export default function TeamsView({ teams, onEdit, trainer, onNavigateToMyTeams 
             Sin equipos registrados
           </h2>
           <p className="mb-6" style={{ color: '#64748b' }}>
-            Los equipos aparecerÃ¡n aquÃ­ cuando sean creados
+            Los equipos apareceran aqui cuando sean creados
           </p>
           {trainer && onNavigateToMyTeams ? (
             <button onClick={onNavigateToMyTeams} className="btn-glow px-6 py-3 rounded-xl text-sm font-bold tracking-wider uppercase">
@@ -311,7 +311,7 @@ export default function TeamsView({ teams, onEdit, trainer, onNavigateToMyTeams 
 
       {/* Hover hint */}
       <p className="text-center mt-6 text-xs" style={{ color: '#334155' }}>
-        Pasa el cursor sobre un PokÃ©mon para ver su nombre
+        Pasa el cursor sobre un Pokemon para ver su nombre
       </p>
     </div>
   )
