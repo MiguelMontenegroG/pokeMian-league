@@ -10,6 +10,7 @@ interface Props {
   trainerName: string
   hasSpunToday: boolean
   todayItem: { item: Item; delivered: boolean } | null
+  customItemIds?: number[] // IDs de items personalizados por el admin (opcional)
   onSpin: (item: Item) => Promise<boolean>
   onClose: () => void
 }
@@ -49,6 +50,7 @@ export default function DailySpinWheel({
   trainerName,
   hasSpunToday,
   todayItem,
+  customItemIds,
   onSpin,
   onClose,
 }: Props) {
@@ -65,11 +67,18 @@ export default function DailySpinWheel({
     return `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
   }, [])
 
-  // Limitar a 25 items y asegurar al menos 3 legendarios
-  // Usar seed diario para que los items sean CONSISTENTES durante todo el dia
-  // Asi los jugadores no pueden cerrar/abrir la ruleta para rerollear los items visibles
+  // Usar items personalizados del admin, o la seleccion automatica diaria
   const displayItems = useMemo(() => {
-    // Filtrar solo items habilitados
+    // Si hay configuracion personalizada, usarla directamente
+    if (customItemIds && customItemIds.length > 0) {
+      const customItems = customItemIds
+        .map(id => items.find(i => i.id === id))
+        .filter((i): i is Item => i !== undefined)
+      // Si hay al menos 1 item valido, usarlos; si no, usar logica normal
+      if (customItems.length > 0) return customItems
+    }
+
+    // Logica normal: seleccion diaria determinista
     const enabledItems = items.filter(i => i.enabled !== false)
 
     // Separar por rareza
@@ -247,7 +256,9 @@ export default function DailySpinWheel({
     setResultItem(null)
 
     // 1. Elegir item por peso (gacha real)
-    const picked = pickWeightedRandom(displayItems)
+    // Si hay configuracion personalizada, distribucion uniforme (el admin decidio los items)
+    const useUniform = !!customItemIds && customItemIds.length > 0
+    const picked = pickWeightedRandom(displayItems, useUniform)
     setResultItem(picked)
 
     // 2. Encontrar el indice del segmento donde esta ese item
@@ -376,7 +387,9 @@ export default function DailySpinWheel({
         {/* Porcentajes gacha */}
         <div className="text-center mb-4">
           <p className="text-[10px] uppercase tracking-widest" style={{ color: '#475569' }}>
-            Probabilidades: 50% Comun · 30% Raro · 15% Epico · 5% Legendario
+            {customItemIds && customItemIds.length > 0
+              ? `Ruleta personalizada - ${displayItems.length} items con igual probabilidad`
+              : 'Probabilidades: 50% Comun · 30% Raro · 15% Epico · 5% Legendario'}
           </p>
         </div>
 
@@ -512,8 +525,14 @@ export default function DailySpinWheel({
   )
 }
 
-function pickWeightedRandom(items: Item[]): Item {
+function pickWeightedRandom(items: Item[], useUniformDistribution = false): Item {
   if (items.length === 0) throw new Error('No items available')
+
+  if (useUniformDistribution) {
+    // Distribucion uniforme: todos los items tienen la misma probabilidad
+    const randomIndex = Math.floor(Math.random() * items.length)
+    return items[randomIndex]
+  }
 
   const weights: Record<string, number> = {
     comun: 50,

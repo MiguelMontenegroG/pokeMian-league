@@ -23,6 +23,7 @@ import type { TrainerTeam } from '@/hooks/useTrainerTeams'
 import { useMatchups, type Matchup } from '@/hooks/useMatchups'
 import { useItemCatalog } from '@/hooks/useItemCatalog'
 import { useItemSpins } from '@/hooks/useItemSpins'
+import { useWheelConfig } from '@/hooks/useWheelConfig'
 import DailySpinWheel from '@/components/DailySpinWheel'
 
 export interface Pokemon {
@@ -205,10 +206,49 @@ export default function App() {
 
   // Daily spin wheel state
   const [showSpinWheel, setShowSpinWheel] = useState(false)
+  const [customSpinItemIds, setCustomSpinItemIds] = useState<number[]>([])
   const {
     items: spinItems,
     loading: spinItemsLoading,
   } = useItemCatalog()
+  const {
+    loadConfig: loadWheelConfig,
+  } = useWheelConfig()
+
+  // Cargar configuracion personalizada de items para la ruleta (desde Supabase + localStorage)
+  const loadCustomSpinItems = async (): Promise<number[]> => {
+    try {
+      const ids = await loadWheelConfig()
+      if (ids && ids.length > 0) {
+        setCustomSpinItemIds(ids)
+        return ids
+      }
+    } catch (err) {
+      console.error('Error loading custom spin items:', err)
+    }
+    setCustomSpinItemIds([])
+    return []
+  }
+
+  useEffect(() => {
+    loadCustomSpinItems()
+
+    // Escuchar cambios en la configuracion personalizada desde el AdminPanel
+    const handleSpinItemsUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<number[]>
+      console.log('[page.tsx] Evento spinItemsUpdated recibido:', customEvent.detail?.length, 'items')
+      if (customEvent.detail && customEvent.detail.length > 0) {
+        console.log('[page.tsx] Estableciendo customSpinItemIds:', customEvent.detail.slice(0, 5), '...')
+        setCustomSpinItemIds(customEvent.detail)
+      } else {
+        console.log('[page.tsx] Limpiando customSpinItemIds (array vacio o sin datos)')
+        setCustomSpinItemIds([])
+      }
+    }
+
+    window.addEventListener('spinItemsUpdated', handleSpinItemsUpdated)
+    return () => window.removeEventListener('spinItemsUpdated', handleSpinItemsUpdated)
+  }, [loadWheelConfig])
   const {
     hasSpunToday,
     getTodaySpin,
@@ -327,7 +367,38 @@ export default function App() {
   }
 
   const handleOpenSpinWheel = () => {
-    setShowSpinWheel(true)
+    // Refrescar estado desde la DB/localStorage antes de abrir
+    // Esto asegura que giros extra dados por admin se reflejen
+    if (trainer) {
+      // Leer configuracion personalizada directamente de localStorage como fallback inmediato
+      try {
+        const saved = localStorage.getItem('pokeMianCustomSpinItems')
+        console.log('[page.tsx] handleOpenSpinWheel - localStorage pokeMianCustomSpinItems:', saved)
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            console.log('[page.tsx] handleOpenSpinWheel - usando localStorage:', parsed.slice(0, 5), '...')
+            setCustomSpinItemIds(parsed)
+          }
+        }
+      } catch (e) {}
+
+      hasSpunToday(trainer.id).then(async (spun) => {
+        setHasSpunState(spun)
+        if (!spun) {
+          setTodaySpinResult(null)
+          setShowSpinWheel(true)
+        } else {
+          const result = await getTodaySpin(trainer.id)
+          if (result) {
+            setTodaySpinResult(result)
+          }
+          setShowSpinWheel(true)
+        }
+      })
+    } else {
+      setShowSpinWheel(true)
+    }
   }
 
   const handleAdminLogout = () => {
@@ -997,6 +1068,7 @@ export default function App() {
           trainerName={trainer.name}
           hasSpunToday={hasSpunState}
           todayItem={todaySpinResult}
+          customItemIds={customSpinItemIds.length > 0 ? customSpinItemIds : undefined}
           onSpin={handleSpin}
           onClose={() => setShowSpinWheel(false)}
         />

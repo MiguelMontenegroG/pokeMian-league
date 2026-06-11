@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Team } from '@/app/page'
 import type { Trainer } from '@/components/TrainersView'
 import type { TrainerTeam } from '@/hooks/useTrainerTeams'
@@ -19,8 +19,11 @@ import GenerateMatchupsButton from '@/components/GenerateMatchupsButton'
 import type { Matchup } from '@/hooks/useMatchups'
 import AdminItemManager from '@/components/AdminItemManager'
 import AdminItemNotifications from '@/components/AdminItemNotifications'
+import AdminSpinBoost from '@/components/AdminSpinBoost'
+import AdminSpinItemsCustom from '@/components/AdminSpinItemsCustom'
 import { useItemCatalog } from '@/hooks/useItemCatalog'
 import { useItemSpins } from '@/hooks/useItemSpins'
+import { useWheelConfig } from '@/hooks/useWheelConfig'
 
 interface AdminPanelProps {
   teams: Team[]
@@ -43,10 +46,10 @@ interface AdminPanelProps {
   onUpdateMatchupResult?: (matchup: Matchup) => Promise<void>
 }
 
-type AdminView = 'standings' | 'teams' | 'create' | 'matchups' | 'bracket' | 'trainers' | 'create-trainer' | 'trainer-detail' | 'trainer-edit-profile' | 'items' | 'pending-items'
+type AdminView = 'standings' | 'teams' | 'create' | 'matchups' | 'bracket' | 'trainers' | 'create-trainer' | 'trainer-detail' | 'trainer-edit-profile' | 'items' | 'pending-items' | 'spin-boost' | 'spin-items'
 
 const navItems = [
-  { id: 'standings' as AdminView, label: 'Clasificación', icon: TrophyIcon },
+  { id: 'standings' as AdminView, label: 'Clasificacion', icon: TrophyIcon },
   { id: 'teams' as AdminView, label: 'Equipos', icon: ShieldIcon },
   { id: 'create' as AdminView, label: 'Crear Equipo', icon: PlusIcon },
   { id: 'matchups' as AdminView, label: 'Enfrentamientos', icon: MatchupsIcon },
@@ -54,6 +57,8 @@ const navItems = [
   { id: 'trainers' as AdminView, label: 'Entrenadores', icon: TrainerIcon },
   { id: 'items' as AdminView, label: 'Items Ruleta', icon: ItemsIcon },
   { id: 'pending-items' as AdminView, label: 'Items Pendientes', icon: BellIcon },
+  { id: 'spin-boost' as AdminView, label: 'Giros Extra', icon: SpinBoostIcon },
+  { id: 'spin-items' as AdminView, label: 'Personalizar Ruleta', icon: SpinWheelIcon },
 ]
 
 function TrophyIcon({ className }: { className?: string }) {
@@ -139,10 +144,52 @@ function BellIcon({ className }: { className?: string }) {
   )
 }
 
+function SpinBoostIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
+      <path d="M8 12h8" />
+    </svg>
+  )
+}
+
+function SpinWheelIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
+      <path d="M12 2v4" />
+      <path d="M12 18v4" />
+      <path d="M2 12h4" />
+      <path d="M18 12h4" />
+      <path d="M4.93 4.93l2.83 2.83" />
+      <path d="M16.24 16.24l2.83 2.83" />
+      <path d="M4.93 19.07l2.83-2.83" />
+      <path d="M16.24 7.76l2.83-2.83" />
+    </svg>
+  )
+}
+
 export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps, updateTeam: updateTeamFromProps, deleteTeam: deleteTeamFromProps, trainerTeams, updateTrainerTeam, onLogout, trainersData, matchups: matchupsFromProps, bulkCreateMatchups, deleteAllMatchups, onUpdateMatchupResult }: AdminPanelProps) {
   const [currentView, setCurrentView] = useState<AdminView>('standings')
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null)
   const [editingMatchup, setEditingMatchup] = useState<Matchup | null>(null)
+
+  // Estado para configuracion personalizada de la ruleta (persistida en Supabase + localStorage)
+  const {
+    saveConfig: saveWheelConfig,
+    clearConfig: clearWheelConfig,
+    loadConfig: loadWheelConfig,
+  } = useWheelConfig()
+  const [customSpinItems, setCustomSpinItems] = useState<number[]>([])
+
+  // Cargar configuracion personalizada de la ruleta desde Supabase/localStorage
+  useEffect(() => {
+    loadWheelConfig().then(ids => {
+      if (ids && ids.length > 0) setCustomSpinItems(ids)
+    })
+  }, [loadWheelConfig])
 
   // Resetear selectedTrainer al cambiar de vista
   const changeView = (view: AdminView) => {
@@ -165,6 +212,8 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
     loading: spinsLoading,
     markAsDelivered,
     markAsUndelivered,
+    resetTodaySpin,
+    resetAllTodaySpins,
     refreshSpins,
   } = useItemSpins()
 
@@ -771,6 +820,30 @@ export default function AdminPanel({ teams, setTeams, addTeam: addTeamFromProps,
             onMarkDelivered={markAsDelivered}
             onMarkUndelivered={markAsUndelivered}
             onRefresh={refreshSpins}
+          />
+        )}
+        {currentView === 'spin-boost' && (
+          <AdminSpinBoost
+            trainers={trainers}
+            spins={spins}
+            catalogItems={catalogItems}
+            onResetTrainerSpin={resetTodaySpin}
+            onResetAllSpins={resetAllTodaySpins}
+            onRefresh={refreshSpins}
+          />
+        )}
+        {currentView === 'spin-items' && (
+          <AdminSpinItemsCustom
+            catalogItems={catalogItems}
+            currentSelection={customSpinItems}
+            onSave={async (selectedIds) => {
+              setCustomSpinItems(selectedIds)
+              await saveWheelConfig(selectedIds)
+            }}
+            onClear={async () => {
+              setCustomSpinItems([])
+              await clearWheelConfig()
+            }}
           />
         )}
         {currentView === 'create-trainer' && (

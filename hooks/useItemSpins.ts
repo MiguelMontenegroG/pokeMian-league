@@ -247,6 +247,77 @@ export function useItemSpins() {
     }
   }
 
+  // Resetear el giro de hoy de un entrenador (permite girar otra vez)
+  const resetTodaySpin = async (trainerId: number): Promise<boolean> => {
+    const today = new Date().toISOString().split('T')[0]
+
+    try {
+      if (!isSupabaseConfigured) {
+        const saved = localStorage.getItem('pokeMianItemSpins')
+        if (saved) {
+          const allSpins = JSON.parse(saved) as SpinRecord[]
+          const filtered = allSpins.filter(
+            s => !(s.trainerId === trainerId && s.spinDate === today)
+          )
+          setSpins(filtered)
+          localStorage.setItem('pokeMianItemSpins', JSON.stringify(filtered))
+        }
+        return true
+      }
+
+      if (!supabase) return false
+
+      const { error } = await supabase
+        .from('item_spins')
+        .delete()
+        .eq('trainer_id', trainerId)
+        .eq('spin_date', today)
+
+      if (error) throw error
+
+      // Recargar spins
+      await loadSpins()
+      return true
+    } catch (err) {
+      console.error('Error resetting today spin:', err)
+      return false
+    }
+  }
+
+  // Resetear el giro de hoy de TODOS los entrenadores
+  const resetAllTodaySpins = async (): Promise<boolean> => {
+    const today = new Date().toISOString().split('T')[0]
+
+    try {
+      if (!isSupabaseConfigured) {
+        const saved = localStorage.getItem('pokeMianItemSpins')
+        if (saved) {
+          const allSpins = JSON.parse(saved) as SpinRecord[]
+          const filtered = allSpins.filter(s => s.spinDate !== today)
+          setSpins(filtered)
+          localStorage.setItem('pokeMianItemSpins', JSON.stringify(filtered))
+        }
+        return true
+      }
+
+      if (!supabase) return false
+
+      const { error } = await supabase
+        .from('item_spins')
+        .delete()
+        .eq('spin_date', today)
+
+      if (error) throw error
+
+      // Recargar spins
+      await loadSpins()
+      return true
+    } catch (err) {
+      console.error('Error resetting all today spins:', err)
+      return false
+    }
+  }
+
   // Marcar como no entregado (deshacer)
   const markAsUndelivered = async (spinId: number): Promise<void> => {
     try {
@@ -291,6 +362,8 @@ export function useItemSpins() {
     saveSpin,
     markAsDelivered,
     markAsUndelivered,
+    resetTodaySpin,
+    resetAllTodaySpins,
     refreshSpins: loadSpins,
   }
 }
