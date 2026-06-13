@@ -136,7 +136,7 @@ export default function TeamFormUnified({
     }
   }, [mode, trainer])
 
-  // Pre-poblar formulario cuando se edita un equipo personal
+  // Pre-poblar formulario cuando se edita un equipo (modo admin con onUpdate)
   useEffect(() => {
     if (initialData) {
       setFormData(prev => ({

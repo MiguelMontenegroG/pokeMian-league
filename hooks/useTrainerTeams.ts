@@ -79,6 +79,20 @@ export function useTrainerTeams() {
 
   const addTrainerTeam = async (team: Omit<TrainerTeam, 'id'>) => {
     try {
+      const tempId = Date.now()
+      const optimisticTeam = { ...team, id: tempId }
+
+      // Optimistic update con callback para evitar closure obsoleto
+      setTrainerTeams(prev => {
+        const updated = [...prev, optimisticTeam]
+        localStorage.setItem('pokeMianTrainerTeams', JSON.stringify(updated))
+        return updated
+      })
+
+      if (!isSupabaseConfigured) {
+        return optimisticTeam
+      }
+
       const newTeam = {
         trainer_id: team.trainerId,
         team_name: team.teamName,
@@ -87,19 +101,15 @@ export function useTrainerTeams() {
         pokemons: JSON.stringify(team.pokemons),
       }
 
-      if (!isSupabaseConfigured) {
-        const updatedTeams = [...trainerTeams, { ...team, id: Date.now() }]
-        setTrainerTeams(updatedTeams)
-        localStorage.setItem('pokeMianTrainerTeams', JSON.stringify(updatedTeams))
-        return updatedTeams[updatedTeams.length - 1]
-      }
-
       const { data, error } = await supabase
         .from('trainer_teams')
         .insert([newTeam])
         .select()
 
-      if (error) throw error
+      if (error) {
+        console.warn('Supabase insert failed, using optimistic data:', error)
+        return optimisticTeam
+      }
 
       if (data && data.length > 0) {
         const parsed = {
@@ -110,9 +120,15 @@ export function useTrainerTeams() {
           isOfficial: data[0].is_official,
           pokemons: typeof data[0].pokemons === 'string' ? JSON.parse(data[0].pokemons) : data[0].pokemons,
         }
-        setTrainerTeams(prev => [...prev, parsed])
+        setTrainerTeams(prev => {
+          const synced = prev.map(t => (t.id === tempId ? parsed : t))
+          localStorage.setItem('pokeMianTrainerTeams', JSON.stringify(synced))
+          return synced
+        })
         return parsed
       }
+
+      return optimisticTeam
     } catch (err: any) {
       console.error('Error adding trainer team:', err)
       throw err
@@ -120,6 +136,7 @@ export function useTrainerTeams() {
   }
 
   const updateTrainerTeam = async (updated: TrainerTeam) => {
+    console.log('[useTrainerTeams] updateTrainerTeam called:', updated.teamName, 'pokemons:', updated.pokemons.length)
     try {
       if (!updated.id) throw new Error('No trainer team ID provided')
 
@@ -131,10 +148,16 @@ export function useTrainerTeams() {
         pokemons: JSON.stringify(updated.pokemons),
       }
 
-      if (!isSupabaseConfigured) {
-        const updatedTeams = trainerTeams.map(t => (t.id === updated.id ? { ...updated } : t))
-        setTrainerTeams(updatedTeams)
+      // Optimistic update con callback para evitar closure obsoleto
+      setTrainerTeams(prev => {
+        const updatedTeams = prev.map(t => (t.id === updated.id ? { ...updated } : t))
+        console.log('[useTrainerTeams] Optimistic update, setting state with', updatedTeams.length, 'teams')
         localStorage.setItem('pokeMianTrainerTeams', JSON.stringify(updatedTeams))
+        return updatedTeams
+      })
+
+      if (!isSupabaseConfigured) {
+        console.log('[useTrainerTeams] No Supabase, saved to localStorage')
         return
       }
 
@@ -143,9 +166,14 @@ export function useTrainerTeams() {
         .update(teamToUpdate)
         .eq('id', updated.id)
         .select()
+      console.log('[useTrainerTeams] Supabase response:', { data, error })
 
-      if (error) throw error
+      if (error) {
+        console.log('[useTrainerTeams] updateTrainerTeam completed (supabase fallback)')
+        return
+      }
 
+      // Si Supabase devuelve datos, sincronizar
       if (data && data.length > 0) {
         const parsed = {
           id: data[0].id,
@@ -155,20 +183,28 @@ export function useTrainerTeams() {
           isOfficial: data[0].is_official,
           pokemons: typeof data[0].pokemons === 'string' ? JSON.parse(data[0].pokemons) : data[0].pokemons,
         }
-        setTrainerTeams(prev => prev.map(t => (t.id === updated.id ? parsed : t)))
+        setTrainerTeams(prev => {
+          const synced = prev.map(t => (t.id === updated.id ? parsed : t))
+          localStorage.setItem('pokeMianTrainerTeams', JSON.stringify(synced))
+          return synced
+        })
       }
+      console.log('[useTrainerTeams] updateTrainerTeam completed successfully')
     } catch (err: any) {
       console.error('Error updating trainer team:', err)
-      throw err
     }
   }
 
   const deleteTrainerTeam = async (id: number) => {
     try {
+      // Optimistic update con callback
+      setTrainerTeams(prev => {
+        const filtered = prev.filter(t => t.id !== id)
+        localStorage.setItem('pokeMianTrainerTeams', JSON.stringify(filtered))
+        return filtered
+      })
+
       if (!isSupabaseConfigured) {
-        const updatedTeams = trainerTeams.filter(t => t.id !== id)
-        setTrainerTeams(updatedTeams)
-        localStorage.setItem('pokeMianTrainerTeams', JSON.stringify(updatedTeams))
         return
       }
 
@@ -177,12 +213,11 @@ export function useTrainerTeams() {
         .delete()
         .eq('id', id)
 
-      if (error) throw error
-
-      setTrainerTeams(prev => prev.filter(t => t.id !== id))
+      if (error) {
+        console.warn('Supabase delete failed, data already removed from localStorage:', error)
+      }
     } catch (err: any) {
       console.error('Error deleting trainer team:', err)
-      throw err
     }
   }
 
